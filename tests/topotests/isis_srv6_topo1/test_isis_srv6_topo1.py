@@ -102,48 +102,44 @@ def build_topo(tgen):
     #
     # Define FRR Routers
     #
-    for router in ["rt1", "rt2", "rt3", "rt4", "rt5", "rt6", "dst"]:
+    for router in ["r1", "r2", "r3", "r4", "c1", "c2", "c3", "c4"]:
         tgen.add_router(router)
 
     #
     # Define connections
     #
     switch = tgen.add_switch("s1")
-    switch.add_link(tgen.gears["rt1"], nodeif="eth-sw1")
-    switch.add_link(tgen.gears["rt2"], nodeif="eth-sw1")
-    switch.add_link(tgen.gears["rt3"], nodeif="eth-sw1")
+    switch.add_link(tgen.gears["c1"], nodeif="eth0")
+    switch.add_link(tgen.gears["r2"], nodeif="eth2")
 
     switch = tgen.add_switch("s2")
-    switch.add_link(tgen.gears["rt2"], nodeif="eth-rt4-1")
-    switch.add_link(tgen.gears["rt4"], nodeif="eth-rt2-1")
+    switch.add_link(tgen.gears["r1"], nodeif="eth0")
+    switch.add_link(tgen.gears["r2"], nodeif="eth0")
 
     switch = tgen.add_switch("s3")
-    switch.add_link(tgen.gears["rt2"], nodeif="eth-rt4-2")
-    switch.add_link(tgen.gears["rt4"], nodeif="eth-rt2-2")
+    switch.add_link(tgen.gears["r2"], nodeif="eth2")
+    switch.add_link(tgen.gears["c2"], nodeif="eth0")
 
     switch = tgen.add_switch("s4")
-    switch.add_link(tgen.gears["rt3"], nodeif="eth-rt5-1")
-    switch.add_link(tgen.gears["rt5"], nodeif="eth-rt3-1")
+    switch.add_link(tgen.gears["c3"], nodeif="eth0")
+    switch.add_link(tgen.gears["r3"], nodeif="eth2")
 
     switch = tgen.add_switch("s5")
-    switch.add_link(tgen.gears["rt3"], nodeif="eth-rt5-2")
-    switch.add_link(tgen.gears["rt5"], nodeif="eth-rt3-2")
+    switch.add_link(tgen.gears["r3"], nodeif="eth0")
+    switch.add_link(tgen.gears["r4"], nodeif="eth0")
 
     switch = tgen.add_switch("s6")
-    switch.add_link(tgen.gears["rt4"], nodeif="eth-rt5")
-    switch.add_link(tgen.gears["rt5"], nodeif="eth-rt4")
+    switch.add_link(tgen.gears["r4"], nodeif="eth2")
+    switch.add_link(tgen.gears["c4"], nodeif="eth0")
 
     switch = tgen.add_switch("s7")
-    switch.add_link(tgen.gears["rt4"], nodeif="eth-rt6")
-    switch.add_link(tgen.gears["rt6"], nodeif="eth-rt4")
+    switch.add_link(tgen.gears["r1"], nodeif="eth1")
+    switch.add_link(tgen.gears["r3"], nodeif="eth1")
 
     switch = tgen.add_switch("s8")
-    switch.add_link(tgen.gears["rt5"], nodeif="eth-rt6")
-    switch.add_link(tgen.gears["rt6"], nodeif="eth-rt5")
+    switch.add_link(tgen.gears["r2"], nodeif="eth1")
+    switch.add_link(tgen.gears["r4"], nodeif="eth1")
 
-    switch = tgen.add_switch("s9")
-    switch.add_link(tgen.gears["rt6"], nodeif="eth-dst")
-    switch.add_link(tgen.gears["dst"], nodeif="eth-rt6")
 
 
 def setup_module(mod):
