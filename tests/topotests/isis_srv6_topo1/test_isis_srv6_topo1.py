@@ -110,7 +110,7 @@ def build_topo(tgen):
     #
     switch = tgen.add_switch("s1")
     switch.add_link(tgen.gears["c1"], nodeif="eth0")
-    switch.add_link(tgen.gears["r2"], nodeif="eth2")
+    switch.add_link(tgen.gears["r1"], nodeif="eth2")
 
     switch = tgen.add_switch("s2")
     switch.add_link(tgen.gears["r1"], nodeif="eth0")
