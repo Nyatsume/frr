@@ -253,6 +253,9 @@ int isis_instance_segment_routing_prefix_sid_map_prefix_sid_last_hop_behavior_mo
 	struct nb_cb_modify_args *args);
 int isis_instance_segment_routing_prefix_sid_map_prefix_sid_n_flag_clear_modify(
 	struct nb_cb_modify_args *args);
+int isis_srv6_srv6_locator_create(enum nb_event event, const struct lyd_node *dnode, union nb_resource *resource);
+int isis_srv6_srv6_locator_destroy(enum nb_event event, const struct lyd_node *dnode);
+int isis_srv6_srv6_locator_modify(enum nb_event event, const struct lyd_node *dnode, union nb_resource *resource);
 int isis_instance_mpls_ldp_sync_destroy(struct nb_cb_destroy_args *args);
 int isis_instance_mpls_ldp_sync_create(struct nb_cb_create_args *args);
 int isis_instance_mpls_ldp_sync_holddown_modify(struct nb_cb_modify_args *args);
@@ -549,6 +552,8 @@ void cli_show_isis_mpls_if_ldp_sync(struct vty *vty, struct lyd_node *dnode,
 void cli_show_isis_mpls_if_ldp_sync_holddown(struct vty *vty,
 					     struct lyd_node *dnode,
 					     bool show_defaults);
+void cli_show_isis_srv6_srv6_locator(struct vty *vty, struct lyd_node *dnode,
+	       				bool show_defaults);
 
 /* Notifications. */
 void isis_notif_db_overload(const struct isis_area *area, bool overload);

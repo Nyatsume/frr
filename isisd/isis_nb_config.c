@@ -2378,6 +2378,72 @@ int isis_instance_segment_routing_prefix_sid_map_prefix_sid_n_flag_clear_modify(
 }
 
 /*
+ * XPath: /frr-isisd:isis/instance/srv6/srv6-locator
+ */
+
+int isis_srv6_srv6_locator_create(enum nb_event event, const struct lyd_node *dnode, union nb_resource *resource)
+{
+//	struct isis_area *area;
+//	const char *area_tag, *locname;
+//	int algonum;
+//	struct isis_srv6_locator *locator;
+//	struct prefix_ipv6 prefix = { .family = AF_INET6, };
+//	area_tag = yang_dnode_get_string(dnode->parent->parent, "./area-tag");
+//	locname = yang_dnode_get_string(dnode, "./srv6-locator-name");
+//	algonum = yang_dnode_get_uint32(dnode, "./algorithm");
+//	area = isis_area_lookup(area_tag);
+//	switch (event) {
+//		case NB_EV_VALIDATE:
+//			if (isis_srv6_locator_lookup(locname, area)) {
+//				return NB_ERR_VALIDATION;
+//			}
+//			break;
+//		case NB_EV_PREPARE:
+//		case NB_EV_ABORT:
+//			break;
+//		case NB_EV_APPLY:
+//			locator = isis_srv6_locator_alloc(locname);
+//			locator->prefix = prefix;
+//			locator->algonum = algonum;
+//			isis_srv6_locator_add(locator, area);
+//			break;
+//	}
+	zlog_debug("created");
+	return NB_OK;
+}
+
+int isis_srv6_srv6_locator_destroy(enum nb_event event, const struct lyd_node *dnode)
+{
+//	struct isis_area *area;
+//	const char *area_tag, *locname;
+//	struct isis_srv6_locator *locator;
+//	area_tag = yang_dnode_get_string(dnode->parent->parent, "./area-tag");
+//	locname = yang_dnode_get_string(dnode, "./srv6-locator-name");
+//	area = isis_area_lookup(area_tag);
+//	switch (event) {
+//		case NB_EV_VALIDATE:
+//			if (!isis_srv6_locator_lookup(locname, area)) {
+//				return NB_ERR_VALIDATION;
+//			}
+//			break;
+//		case NB_EV_PREPARE:
+//		case NB_EV_ABORT:
+//			break;
+//		case NB_EV_APPLY:
+//			locator = isis_srv6_locator_lookup(locname, area);
+//			isis_srv6_locator_delete(locator, area);
+//			isis_srv6_locator_free(locator);
+//			break;
+//	}
+	zlog_debug("destroyed");
+	return NB_OK;
+}
+
+int isis_srv6_srv6_locator_modify(enum nb_event event, const struct lyd_node *dnode, union nb_resource *resource)
+{
+	return NB_OK;
+}
+/*
  * XPath: /frr-isisd:isis/instance/mpls/ldp-sync
  */
 int isis_instance_mpls_ldp_sync_create(struct nb_cb_create_args *args)

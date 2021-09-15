@@ -70,6 +70,43 @@ DEFPY_YANG_NOSH(router_isis, router_isis_cmd,
 	return ret;
 }
 
+/*DEFUN_NOSH (isis_segment_routing_srv6,
+		isis_segment_routing_srv6_cmd,
+		"segment-routing srv6",
+		"Segment-Routing configuration\n"
+		"Segment-Routing SRv6 configuration\n")
+{
+	VTY_DECLVAR_CONTEXT(bgp, bgp);
+	vty->node = BGP_SRV6_NODE;
+	return CMD_SUCCESS;
+}*/
+
+DEFPY(isis_srv6_locator,
+		isis_srv6_locator_cmd,
+		"srv6-locator WORD$locname algorithm (0-255)$algonum",
+		"SRv6 locator\n"
+		"SRv6 locator name\n"
+		"SRv6 locator algorithm\n"
+		"SRv6 locator algorithm number\n")
+{
+	char base_xpath[XPATH_MAXLEN];
+	zlog_debug("aaa");
+	snprintf(base_xpath, XPATH_MAXLEN, "./srv6/srv6-locator[srv6-locator-name='%s']", locname);
+	zlog_debug("bbb");
+	nb_cli_enqueue_change(vty, ".", NB_OP_CREATE, NULL);
+	zlog_debug("ccc");
+	nb_cli_enqueue_change(vty, "./algorithm", NB_OP_MODIFY, algonum_str);
+	zlog_debug("ddd");
+	return nb_cli_apply_changes(vty, base_xpath);
+}
+
+void cli_show_isis_srv6_srv6_locator(struct vty *vty, struct lyd_node *dnode,
+		bool show_defaults)
+{
+	vty_out(vty, " srv6-locator %s\n",
+			yang_dnode_get_string(dnode, "./srv6-locator-name"));
+}
+
 struct if_iter {
 	struct vty *vty;
 	const char *tag;
@@ -3298,6 +3335,10 @@ void isis_cli_init(void)
 	install_element(INTERFACE_NODE, &isis_mpls_if_ldp_sync_cmd);
 	install_element(INTERFACE_NODE, &isis_mpls_if_ldp_sync_holddown_cmd);
 	install_element(INTERFACE_NODE, &no_isis_mpls_if_ldp_sync_holddown_cmd);
+
+
+	install_element(ISIS_NODE, &isis_srv6_locator_cmd);
+	//install_element(ISIS_NODE, &no_isis_srv6_locator_cmd);
 }
 
 #endif /* ifndef FABRICD */
