@@ -1072,6 +1072,15 @@ DEFUN(show_sr_node, show_sr_node_cmd,
 	return CMD_SUCCESS;
 }
 
+DEFUN(show_srv6, show_srv6_cmd,
+		"show isis segment-routing srv6",
+		SHOW_STR PROTO_HELP
+		"Segment-Routing\n"
+		"Segment-Routing srv6\n")
+{
+	vty_out(vty, "srv6 test\n");
+	return CMD_SUCCESS;
+}
 /* --- IS-IS Segment Routing Management function ---------------------------- */
 
 /**
@@ -1267,6 +1276,11 @@ void isis_sr_init(void)
 	hook_register(isis_if_new_hook, sr_if_new_hook);
 }
 
+void isis_srv6_init(void)
+{
+	install_element(VIEW_NODE, &show_srv6_cmd);
+}
+
 /**
  * IS-IS Segment Routing global terminate.
  */
@@ -1277,4 +1291,8 @@ void isis_sr_term(void)
 	hook_unregister(isis_adj_ip_enabled_hook, sr_adj_ip_enabled);
 	hook_unregister(isis_adj_ip_disabled_hook, sr_adj_ip_disabled);
 	hook_unregister(isis_if_new_hook, sr_if_new_hook);
+}
+
+void isis_srv6_term(void)
+{
 }

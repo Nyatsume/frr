@@ -233,5 +233,6 @@ extern void isis_sr_area_init(struct isis_area *area);
 extern void isis_sr_area_term(struct isis_area *area);
 extern void isis_sr_init(void);
 extern void isis_sr_term(void);
-
+extern void isis_srv6_init(void);
+extern void isis_srv6_term(void);
 #endif /* _FRR_ISIS_SR_H */
