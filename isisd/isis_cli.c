@@ -99,7 +99,12 @@ DEFPY(isis_srv6_locator,
 //	nb_cli_enqueue_change(vty, ".", NB_OP_CREATE, NULL);
 //	zlog_debug("ddd");
 //	return nb_cli_apply_changes(vty, base_xpath);
+	int ret;
 	snprintf(srv6_locator, sizeof(srv6_locator),"%s", locname);
+	ret = isis_zebra_srv6_manager_get_locator_chunk(locname);
+	if (ret < 0)
+		return CMD_WARNING_CONFIG_FAILED;
+
 	return CMD_SUCCESS;
 }
 

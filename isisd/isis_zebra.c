@@ -800,6 +800,30 @@ static int isis_zebra_client_close_notify(ZAPI_CALLBACK_ARGS)
 	return ret;
 }
 
+static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
+{
+	struct stream *s = NULL;
+	struct listnode *node;
+	struct prefix_ipv6 *c;
+	struct srv6_locator_chunk s6c = {};
+	struct prefix_ipv6 *chunk = NULL;
+
+	s = zclient->ibuf;
+	zapi_srv6_locator_chunk_decode(s, &s6c);
+	marker_debug_msg("nyatsume");
+
+
+
+	chunk = prefix_ipv6_new();
+	*chunk = s6c.prefix;
+	marker_debug_fmsg("%s",s6c.locator_name);
+}
+
+int isis_zebra_srv6_manager_get_locator_chunk(const char *name)
+{
+	return srv6_manager_get_locator_chunk(zclient, name);
+}
+
 void isis_zebra_init(struct thread_master *master, int instance)
 {
 	/* Initialize asynchronous zclient. */
@@ -830,6 +854,8 @@ void isis_zebra_init(struct thread_master *master, int instance)
 	zclient->opaque_msg_handler = isis_opaque_msg_handler;
 
 	zclient->zebra_client_close_notify = isis_zebra_client_close_notify;
+	zclient->process_srv6_locator_chunk =
+		isis_zebra_process_srv6_locator_chunk;
 }
 
 void isis_zebra_stop(void)

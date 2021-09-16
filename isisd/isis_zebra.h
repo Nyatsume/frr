@@ -26,6 +26,8 @@
 
 extern struct zclient *zclient;
 
+extern int isis_zebra_srv6_manager_get_locator_chunk(const char *name);
+
 struct label_chunk {
 	uint32_t start;
 	uint32_t end;
