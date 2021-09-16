@@ -894,6 +894,11 @@ static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 	char debug_sid[256];
 	inet_ntop(AF_INET6, &sid, debug_sid, 256);
 	marker_debug_fmsg("%s\n",debug_sid);
+	
+	enum seg6local_action_t act;
+	struct seg6local_context ctx = {};
+	act = ZEBRA_SEG6_LOCAL_ACTION_END;
+	zclient_send_localsid(zclient, &sid, 2, act, &ctx);
 }
 
 int isis_zebra_srv6_manager_get_locator_chunk(const char *name)
