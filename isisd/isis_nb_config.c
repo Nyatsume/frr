@@ -51,9 +51,12 @@
 #include "isisd/isis_redist.h"
 #include "isisd/isis_ldp_sync.h"
 #include "isisd/isis_dr.h"
+#include "isisd/isis_sr.h"
 
 DEFINE_MTYPE_STATIC(ISISD, ISIS_MPLS_TE,    "ISIS MPLS_TE parameters");
 DEFINE_MTYPE_STATIC(ISISD, ISIS_PLIST_NAME, "ISIS prefix-list name");
+
+
 
 /*
  * XPath: /frr-isisd:isis/instance
@@ -2383,31 +2386,38 @@ int isis_instance_segment_routing_prefix_sid_map_prefix_sid_n_flag_clear_modify(
 
 int isis_srv6_srv6_locator_create(enum nb_event event, const struct lyd_node *dnode, union nb_resource *resource)
 {
-//	struct isis_area *area;
-//	const char *area_tag, *locname;
-//	int algonum;
-//	struct isis_srv6_locator *locator;
-//	struct prefix_ipv6 prefix = { .family = AF_INET6, };
-//	area_tag = yang_dnode_get_string(dnode->parent->parent, "./area-tag");
-//	locname = yang_dnode_get_string(dnode, "./srv6-locator-name");
-//	algonum = yang_dnode_get_uint32(dnode, "./algorithm");
-//	area = isis_area_lookup(area_tag);
-//	switch (event) {
-//		case NB_EV_VALIDATE:
-//			if (isis_srv6_locator_lookup(locname, area)) {
-//				return NB_ERR_VALIDATION;
-//			}
-//			break;
-//		case NB_EV_PREPARE:
-//		case NB_EV_ABORT:
-//			break;
-//		case NB_EV_APPLY:
-//			locator = isis_srv6_locator_alloc(locname);
-//			locator->prefix = prefix;
-//			locator->algonum = algonum;
-//			isis_srv6_locator_add(locator, area);
-//			break;
-//	}
+
+	marker_debug_msg("call");
+	struct isis_area *area;
+	const char *area_tag, *locname;
+	struct isis_srv6_locator *locator;
+	struct prefix_ipv6 prefix = { .family = AF_INET6, };
+	area_tag = yang_dnode_get_string(dnode->parent->parent, "./area-tag");
+	marker_debug_msg("call");
+
+	locname = yang_dnode_get_string(dnode, "./srv6-locator-name");
+	marker_debug_msg("call");
+	//area = isis_area_lookup(area_tag);
+	switch (event) {
+		case NB_EV_VALIDATE:
+			if (isis_srv6_locator_lookup(locname, area)) {
+				marker_debug_msg("call");
+				return NB_ERR_VALIDATION;
+			}
+			break;
+		case NB_EV_PREPARE:
+		case NB_EV_ABORT:
+			break;
+		case NB_EV_APPLY:
+			marker_debug_msg("call");
+			locator = isis_srv6_locator_alloc(locname);
+			marker_debug_msg("call");
+			locator->prefix = prefix;
+			marker_debug_msg("call");
+			isis_srv6_locator_add(locator, area);
+			marker_debug_msg("call");
+			break;
+	}
 	zlog_debug("created");
 	return NB_OK;
 }

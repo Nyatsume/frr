@@ -209,6 +209,8 @@ struct isis *isis_new(const char *vrf_name)
 	isis->snmp_notifications = 1;
 	dyn_cache_init(isis);
 
+	isis->srv6_locators = list_new();
+
 	listnode_add(im->isis, isis);
 
 	return isis;
@@ -394,6 +396,8 @@ struct isis_area *isis_area_create(const char *area_tag, const char *vrf_name)
 
 	area->bfd_signalled_down = false;
 	area->bfd_force_spf_refresh = false;
+
+	area->srv6_locators = list_new();
 
 	QOBJ_REG(area, isis_area);
 

@@ -84,7 +84,7 @@ void cli_show_isis_srv6(struct vty *vty, struct lyd_node *dnode, bool show_defau
 	vty->node = BGP_SRV6_NODE;
 	return CMD_SUCCESS;
 }*/
-
+char srv6_locator[256];
 DEFPY(isis_srv6_locator,
 		isis_srv6_locator_cmd,
 		"srv6 locator WORD$locname",
@@ -92,15 +92,26 @@ DEFPY(isis_srv6_locator,
 		"SRv6 locator\n"
 		"SRv6 locator name\n")
 {
-	char base_xpath[XPATH_MAXLEN];
-	zlog_debug("aaa");
-	snprintf(base_xpath, XPATH_MAXLEN, "./srv6/srv6-locator[srv6-locator-name='%s']", locname);
-	zlog_debug("bbb");
-	nb_cli_enqueue_change(vty, ".", NB_OP_CREATE, NULL);
-	zlog_debug("ddd");
-	return nb_cli_apply_changes(vty, base_xpath);
+//	char base_xpath[XPATH_MAXLEN];
+//	zlog_debug("aaa");
+//	snprintf(base_xpath, XPATH_MAXLEN, "./srv6/srv6-locator[srv6-locator-name='%s']", locname);
+//	zlog_debug("bbb");
+//	nb_cli_enqueue_change(vty, ".", NB_OP_CREATE, NULL);
+//	zlog_debug("ddd");
+//	return nb_cli_apply_changes(vty, base_xpath);
+	snprintf(srv6_locator, sizeof(srv6_locator),"%s", locname);
+	return CMD_SUCCESS;
 }
 
+DEFUN(show_srv6, show_srv6_cmd,
+		"show isis segment-routing srv6",
+		SHOW_STR PROTO_HELP
+		"Segment-Routing\n"
+		"Segment-Routing srv6\n")
+{
+	vty_out(vty, "%s\n", srv6_locator);
+	return CMD_SUCCESS;
+}
 void cli_show_isis_srv6_srv6_locator(struct vty *vty, struct lyd_node *dnode,
 		bool show_defaults)
 {
@@ -3226,6 +3237,7 @@ void isis_cli_init(void)
 
 	install_element(ISIS_NODE, &is_type_cmd);
 	install_element(ISIS_NODE, &no_is_type_cmd);
+	install_element(VIEW_NODE, &show_srv6_cmd);
 
 	install_element(ISIS_NODE, &dynamic_hostname_cmd);
 

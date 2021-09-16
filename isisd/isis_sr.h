@@ -235,4 +235,18 @@ extern void isis_sr_init(void);
 extern void isis_sr_term(void);
 extern void isis_srv6_init(void);
 extern void isis_srv6_term(void);
+
+struct isis_area;
+
+struct isis_srv6_locator {
+	char name[256];
+	struct prefix_ipv6 prefix;
+	uint8_t function_bits_length;
+	struct list *functions;
+};
+
+extern void isis_srv6_locator_add(struct isis_srv6_locator *locator, struct isis_area *area);
+extern struct isis_srv6_locator *isis_srv6_locator_lookup(const char *name, struct isis_area *area);
+extern struct isis_srv6_locator *isis_srv6_locator_lookup_zebra(const char *name, struct isis_area *area);
+extern struct isis_srv6_locator *isis_srv6_locator_alloc(const char *name);
 #endif /* _FRR_ISIS_SR_H */

@@ -50,6 +50,7 @@
 
 /* Local variables and functions */
 DEFINE_MTYPE_STATIC(ISISD, ISIS_SR_INFO, "ISIS segment routing information");
+DEFINE_MTYPE_STATIC(ISISD, SRV6, "ISIS SRv6");
 
 static void sr_local_block_delete(struct isis_area *area);
 static int sr_local_block_init(struct isis_area *area);
@@ -1072,14 +1073,54 @@ DEFUN(show_sr_node, show_sr_node_cmd,
 	return CMD_SUCCESS;
 }
 
-DEFUN(show_srv6, show_srv6_cmd,
-		"show isis segment-routing srv6",
-		SHOW_STR PROTO_HELP
-		"Segment-Routing\n"
-		"Segment-Routing srv6\n")
+void isis_srv6_locator_add(struct isis_srv6_locator *locator, struct isis_area *area)
 {
-	vty_out(vty, "srv6 test\n");
-	return CMD_SUCCESS;
+	struct isis_srv6_locator *tmp;
+	listnode_add(area->srv6_locators, locator);
+	tmp = isis_srv6_locator_lookup_zebra(locator->name, area);
+	if(tmp) {
+		lsp_regenerate_schedule(area, area->is_type, 0);
+	}
+}
+
+struct isis_srv6_locator *isis_srv6_locator_lookup(const char *name, struct isis_area *area)
+{
+	struct isis_srv6_locator *locator;
+	struct listnode *node;
+	for (ALL_LIST_ELEMENTS_RO(area->srv6_locators, node, locator)) {
+		if (!strncmp(name, locator->name, 256)) {
+			return locator;
+		}
+	}
+	return NULL;
+}
+
+struct isis_srv6_locator *isis_srv6_locator_lookup_zebra(const char *name, struct isis_area *area)
+{
+	struct isis_srv6_locator *locator;
+	struct listnode *node;
+	for (ALL_LIST_ELEMENTS_RO(area->srv6_locators, node, locator)) {
+		if (!strncmp(name, locator->name, 256)) {
+			return locator;
+		}
+	}
+	return NULL;
+}
+
+struct isis_srv6_locator *isis_srv6_locator_alloc(const char *name)
+{
+	struct isis_srv6_locator *locator = NULL;
+	locator = XCALLOC(MTYPE_SRV6, sizeof(struct isis_srv6_locator));
+	if (locator) {
+		int namelen = sizeof(locator->name);
+		if (namelen > 255) {
+			namelen = 255;
+		}
+		strlcpy (locator->name, name, namelen);
+		locator->functions = list_new();
+
+	}
+	return locator;
 }
 /* --- IS-IS Segment Routing Management function ---------------------------- */
 
@@ -1278,7 +1319,6 @@ void isis_sr_init(void)
 
 void isis_srv6_init(void)
 {
-	install_element(VIEW_NODE, &show_srv6_cmd);
 }
 
 /**

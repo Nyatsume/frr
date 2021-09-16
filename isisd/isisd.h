@@ -98,6 +98,7 @@ struct isis {
 	struct list *dyn_cache;
 
 	struct route_table *ext_info[REDIST_PROTOCOL_COUNT];
+	struct list *srv6_locators;
 };
 
 extern struct isis_master *im;
@@ -234,6 +235,9 @@ struct isis_area {
 	uint64_t auth_failures[2];
 	uint64_t id_len_mismatches[2];
 	uint64_t lsp_error_counter[2];
+
+	/* SRv6 fields*/
+	struct list *srv6_locators;
 
 	QOBJ_FIELDS;
 };
