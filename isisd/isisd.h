@@ -71,7 +71,9 @@ extern struct zebra_privs_t isisd_privs;
 /* #define EXTREME_DEBUG  */
 
 struct fabricd;
-
+struct isis_srv6_function {
+	char locator_name[256];
+};
 struct isis_master {
 	/* ISIS instance. */
 	struct list *isis;
@@ -99,6 +101,10 @@ struct isis {
 
 	struct route_table *ext_info[REDIST_PROTOCOL_COUNT];
 	struct list *srv6_locators;
+	bool srv6_enabled;
+	char srv6_locator_name[256];
+	struct list *srv6_locator_chunks;
+	struct list *srv6_functions;
 };
 
 extern struct isis_master *im;
@@ -238,6 +244,8 @@ struct isis_area {
 
 	/* SRv6 fields*/
 	struct list *srv6_locators;
+	struct list *srv6_locator_chunks;
+	struct list *srv6_locator_name;
 
 	QOBJ_FIELDS;
 };

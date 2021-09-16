@@ -99,6 +99,7 @@ DEFPY(isis_srv6_locator,
 //	nb_cli_enqueue_change(vty, ".", NB_OP_CREATE, NULL);
 //	zlog_debug("ddd");
 //	return nb_cli_apply_changes(vty, base_xpath);
+//	struct isis *isis;
 	int ret;
 	snprintf(srv6_locator, sizeof(srv6_locator),"%s", locname);
 	ret = isis_zebra_srv6_manager_get_locator_chunk(locname);
@@ -114,7 +115,8 @@ DEFUN(show_srv6, show_srv6_cmd,
 		"Segment-Routing\n"
 		"Segment-Routing srv6\n")
 {
-	vty_out(vty, "%s\n", srv6_locator);
+//	struct isis *isis;
+	vty_out(vty, "%s\n",srv6_locator);
 	return CMD_SUCCESS;
 }
 void cli_show_isis_srv6_srv6_locator(struct vty *vty, struct lyd_node *dnode,

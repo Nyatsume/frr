@@ -51,6 +51,7 @@
 /* Local variables and functions */
 DEFINE_MTYPE_STATIC(ISISD, ISIS_SR_INFO, "ISIS segment routing information");
 DEFINE_MTYPE_STATIC(ISISD, SRV6, "ISIS SRv6");
+DEFINE_MTYPE(ISISD, ISIS_SRV6_FUNCTION, "ISIS srv6 function");
 
 static void sr_local_block_delete(struct isis_area *area);
 static int sr_local_block_init(struct isis_area *area);
@@ -1073,6 +1074,66 @@ DEFUN(show_sr_node, show_sr_node_cmd,
 	return CMD_SUCCESS;
 }
 
+static void sid_register(struct isis *isis, const struct in6_addr *sid,
+			 const char *locator_name)
+{
+	struct isis_srv6_function *func;
+	func = XCALLOC(MTYPE_ISIS_SRV6_FUNCTION,
+		       sizeof(struct isis_srv6_function));
+	snprintf(func->locator_name, sizeof(func->locator_name),
+		 "%s", locator_name);
+	listnode_add(isis->srv6_functions, func);
+}
+
+//static bool sid_exist(struct isis *isis, const struct in6_addr *sid)
+//{
+//	struct listnode *node;
+//	struct isis_srv6_function *func;
+//
+//	for (ALL_LIST_ELEMENTS_RO(isis->srv6_functions, node, func))
+//		if (sid_same(&func->sid, sid))
+//			return true;
+//	return false;
+//}
+static bool alloc_new_sid(struct isis *isis, uint32_t index,
+			  struct in6_addr *sid)
+{
+	struct listnode *node;
+	struct prefix_ipv6 *chunk;
+	struct in6_addr sid_buf;
+	bool alloced = false;
+
+	if (!isis || !sid)
+		return false;
+
+	for (ALL_LIST_ELEMENTS_RO(isis->srv6_locator_chunks, node, chunk)) {
+		sid_buf = chunk->prefix;
+		if (index != 0) {
+			sid_buf.s6_addr[15] = index;
+//			if (sid_exist(isis, &sid_buf))
+//				return false;
+			alloced = true;
+			break;
+		}
+
+		for (size_t i = 1; i < 255; i++) {
+			sid_buf.s6_addr[15] = (i & 0xff00) >> 8;
+			sid_buf.s6_addr[14] = (i & 0x00ff);
+
+//			if (sid_exist(isis, &sid_buf))
+//				continue;
+			alloced = true;
+			break;
+		}
+	}
+
+	if (!alloced)
+		return false;
+
+	sid_register(isis, &sid_buf, isis->srv6_locator_name);
+	*sid = sid_buf;
+	return true;
+}
 void isis_srv6_locator_add(struct isis_srv6_locator *locator, struct isis_area *area)
 {
 	struct isis_srv6_locator *tmp;
@@ -1317,10 +1378,13 @@ void isis_sr_init(void)
 	hook_register(isis_if_new_hook, sr_if_new_hook);
 }
 
-void isis_srv6_init(void)
-{
-}
 
+void isis_srv6_chunk_init(struct isis *isis)
+{
+	isis->srv6_enabled = false;
+	memset(isis->srv6_locator_name, 0, sizeof(isis->srv6_locator_name));
+	isis->srv6_locator_chunks = list_new();
+}
 /**
  * IS-IS Segment Routing global terminate.
  */
@@ -1333,6 +1397,9 @@ void isis_sr_term(void)
 	hook_unregister(isis_if_new_hook, sr_if_new_hook);
 }
 
+void isis_srv6_init(void)
+{
+}
 void isis_srv6_term(void)
 {
 }
