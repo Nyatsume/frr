@@ -31,6 +31,7 @@
 #include "libfrr.h"
 #include "yang.h"
 #include "lib/linklist.h"
+#include "lib/srv6.h"
 #include "isisd/isisd.h"
 #include "isisd/isis_nb.h"
 #include "isisd/isis_misc.h"
@@ -109,6 +110,9 @@ DEFPY(isis_srv6_locator,
 	return CMD_SUCCESS;
 }
 
+extern struct in6_addr node_sid;
+extern struct in6_addr adj_sids[SRV6_MAX_SIDS];
+
 DEFUN(show_srv6, show_srv6_cmd,
 		"show isis segment-routing srv6",
 		SHOW_STR PROTO_HELP
@@ -116,7 +120,19 @@ DEFUN(show_srv6, show_srv6_cmd,
 		"Segment-Routing srv6\n")
 {
 //	struct isis *isis;
-	vty_out(vty, "%s\n",srv6_locator);
+	vty_out(vty, "locator: %s\n",srv6_locator);
+
+	char b[256];
+	vty_out(vty, "node-sid: %s\n",
+			inet_ntop(AF_INET6, &node_sid, b, 256));
+	for (int i = 0; i < SRV6_MAX_SIDS; i++) {
+		if (sid_zero(&adj_sids[i]))
+			continue;
+		vty_out(vty, "adj-sid[%d]: %s\n", i,
+				inet_ntop(AF_INET6, &adj_sids[i], b, 256));
+	}
+
+
 	return CMD_SUCCESS;
 }
 void cli_show_isis_srv6_srv6_locator(struct vty *vty, struct lyd_node *dnode,

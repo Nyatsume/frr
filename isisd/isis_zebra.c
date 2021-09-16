@@ -801,6 +801,10 @@ static int isis_zebra_client_close_notify(ZAPI_CALLBACK_ARGS)
 }
 
 struct list *srv6_locator_chunks;
+struct in6_addr node_sid;
+struct in6_addr adj_sids[SRV6_MAX_SIDS];
+struct in6_addr esid[SRV6_MAX_SIDS] = {0};
+
 static void dump_srv6_chunks(struct list *cs)
 {
 	struct listnode *node;
@@ -816,16 +820,30 @@ static void dump_srv6_chunks(struct list *cs)
 	}
 	
 }
-static void sid_register(const struct in6_addr *sid,
-			 const char *locator_name)
+
+static bool sid_exist(const struct in6_addr *sid)
 {
-//	struct isis_srv6_function *func;
-//	func = XCALLOC(MTYPE_ISIS_SRV6_FUNCTION,
-//		       sizeof(struct isis_srv6_function));
-//	snprintf(func->locator_name, sizeof(func->locator_name),
-//		 "%s", locator_name);
-//	listnode_add(srv6_functions, func);
+	for (int i=0; i<SRV6_MAX_SIDS; i++) {
+		if (sid_zero(&esid[i]))
+			continue;
+		if (sid_same(&esid[i], sid))
+			return true;
+	}
+	return false;
 }
+
+static void sid_register(const struct in6_addr *sid)
+{
+	if (sid_exist(sid))
+		return;
+
+	for (int i=0; i<SRV6_MAX_SIDS; i++)
+		if (sid_zero(&esid[i])) {
+			esid[i] = *sid;
+			return;
+		}
+}
+
 static bool alloc_new_sid(uint32_t index,
 			  struct in6_addr *sid)
 {
@@ -841,8 +859,8 @@ static bool alloc_new_sid(uint32_t index,
 		sid_buf = chunk->prefix;
 		if (index != 0) {
 			sid_buf.s6_addr[15] = index;
-//			if (sid_exist(isis, &sid_buf))
-//				return false;
+			if (sid_exist(&sid_buf))
+				return false;
 			alloced = true;
 			break;
 		}
@@ -851,8 +869,8 @@ static bool alloc_new_sid(uint32_t index,
 			sid_buf.s6_addr[15] = (i & 0xff00) >> 8;
 			sid_buf.s6_addr[14] = (i & 0x00ff);
 
-//			if (sid_exist(isis, &sid_buf))
-//				continue;
+			if (sid_exist(&sid_buf))
+				continue;
 			alloced = true;
 			break;
 		}
@@ -861,10 +879,21 @@ static bool alloc_new_sid(uint32_t index,
 	if (!alloced)
 		return false;
 
-//	sid_register(&sid_buf,srv6_locator_name);
+	sid_register(&sid_buf);
 	*sid = sid_buf;
+
+	char b[256];
+	marker_debug_fmsg("ALLOC: %s", inet_ntop(AF_INET6, sid, b, 256));
+
+	marker_debug_msg("-----");
+	for (int i=0; i<SRV6_MAX_SIDS; i++) {
+		marker_debug_fmsg("esid[%d]: %s", i, inet_ntop(AF_INET6, &esid[i], b, 256));
+	}
+	marker_debug_msg("-----");
+
 	return true;
 }
+
 static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 {
 	struct stream *s = NULL;
@@ -878,9 +907,6 @@ static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 		srv6_locator_chunks = list_new();
 	s = zclient->ibuf;
 	zapi_srv6_locator_chunk_decode(s, &s6c);
-	marker_debug_msg("nyatsume");
-
-
 
 	chunk = prefix_ipv6_new();
 	*chunk = s6c.prefix;
@@ -894,11 +920,46 @@ static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 	char debug_sid[256];
 	inet_ntop(AF_INET6, &sid, debug_sid, 256);
 	marker_debug_fmsg("%s\n",debug_sid);
-	
+
+	// adjs-sid
+	struct listnode *anode;
+	struct listnode *cnode;
+	struct isis_area *area;
+	struct isis_adjacency *adj;
+	struct isis_circuit *circuit;
+	int i = 0;
+	for (ALL_LIST_ELEMENTS_RO(im->isis, node, isis)) {
+		for (ALL_LIST_ELEMENTS_RO(isis->area_list, anode, area)) {
+			for (ALL_LIST_ELEMENTS_RO(area->adjacency_list, cnode, adj)) {
+				if (adj && adj->ipv6_addresses) {
+					char b[256];
+					inet_ntop(AF_INET6, adj->ipv6_addresses, b, 256);
+					adj_sids[i++] = *adj->ipv6_addresses;
+
+					struct in6_addr sid;
+					bool ret = alloc_new_sid(0, &sid);
+					if (!ret) {
+						marker_debug_msg("failed");
+						continue;
+					}
+
+					enum seg6local_action_t act;
+					struct seg6local_context ctx = {};
+					ctx.nh6 = *adj->ipv6_addresses;
+					act = ZEBRA_SEG6_LOCAL_ACTION_END_X;
+					zclient_send_localsid(zclient, &sid, 2, act, &ctx);
+				}
+			}
+		}
+	}
+
+
+	// Print Node SID
 	enum seg6local_action_t act;
 	struct seg6local_context ctx = {};
 	act = ZEBRA_SEG6_LOCAL_ACTION_END;
 	zclient_send_localsid(zclient, &sid, 2, act, &ctx);
+	node_sid = sid;
 }
 
 int isis_zebra_srv6_manager_get_locator_chunk(const char *name)
