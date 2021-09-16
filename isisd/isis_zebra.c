@@ -801,6 +801,70 @@ static int isis_zebra_client_close_notify(ZAPI_CALLBACK_ARGS)
 }
 
 struct list *srv6_locator_chunks;
+static void dump_srv6_chunks(struct list *cs)
+{
+	struct listnode *node;
+	struct prefix_ipv6 *chunk;
+	struct in6_addr *tovpn4_sid;
+	struct in6_addr *tovpn6_sid;
+	char buf[256];
+	char buf_tovpn4_sid[256];
+	char buf_tovpn6_sid[256];
+	for (ALL_LIST_ELEMENTS_RO(cs, node, chunk)) {
+		prefix2str(chunk, buf, sizeof(buf));
+		marker_debug_fmsg("- %s\n", buf);
+	}
+	
+}
+static void sid_register(const struct in6_addr *sid,
+			 const char *locator_name)
+{
+//	struct isis_srv6_function *func;
+//	func = XCALLOC(MTYPE_ISIS_SRV6_FUNCTION,
+//		       sizeof(struct isis_srv6_function));
+//	snprintf(func->locator_name, sizeof(func->locator_name),
+//		 "%s", locator_name);
+//	listnode_add(srv6_functions, func);
+}
+static bool alloc_new_sid(uint32_t index,
+			  struct in6_addr *sid)
+{
+	struct listnode *node;
+	struct prefix_ipv6 *chunk;
+	struct in6_addr sid_buf;
+	bool alloced = false;
+
+	if (!sid)
+		return false;
+
+	for (ALL_LIST_ELEMENTS_RO(srv6_locator_chunks, node, chunk)) {
+		sid_buf = chunk->prefix;
+		if (index != 0) {
+			sid_buf.s6_addr[15] = index;
+//			if (sid_exist(isis, &sid_buf))
+//				return false;
+			alloced = true;
+			break;
+		}
+
+		for (size_t i = 1; i < 255; i++) {
+			sid_buf.s6_addr[15] = (i & 0xff00) >> 8;
+			sid_buf.s6_addr[14] = (i & 0x00ff);
+
+//			if (sid_exist(isis, &sid_buf))
+//				continue;
+			alloced = true;
+			break;
+		}
+	}
+
+	if (!alloced)
+		return false;
+
+//	sid_register(&sid_buf,srv6_locator_name);
+	*sid = sid_buf;
+	return true;
+}
 static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 {
 	struct stream *s = NULL;
@@ -822,6 +886,14 @@ static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 	*chunk = s6c.prefix;
 	marker_debug_fmsg("%s",s6c.locator_name);
 	listnode_add(srv6_locator_chunks, chunk);
+	dump_srv6_chunks(srv6_locator_chunks);
+	struct in6_addr sid;
+	bool ret = alloc_new_sid(0, &sid);
+	if (!ret)
+		marker_debug_msg("failed");
+	char debug_sid[256];
+	inet_ntop(AF_INET6, &sid, debug_sid, 256);
+	marker_debug_fmsg("%s\n",debug_sid);
 }
 
 int isis_zebra_srv6_manager_get_locator_chunk(const char *name)
