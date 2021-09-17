@@ -824,6 +824,7 @@ struct in6_addr esid[SRV6_MAX_SIDS] = {0};
 //	return false;
 //}
 
+#if 0
 static void adj_segment_set(struct in6_addr *adj_addr)
 {
 	// TODO(nyatsume)
@@ -849,14 +850,16 @@ static void adj_segment_unset(struct in6_addr *adj_addr)
 {
 	return;
 }
+#endif
 
-static bool node_segment_is_exist()
+static bool node_segment_is_exist(void)
 {
 	// TODO(nyatsume)
 	return !sid_zero(&node_segment.sid);
 }
 
-static void node_segment_set()
+#if 0
+static void node_segment_set(void)
 {
 //	struct prefix_ipv6 *chunk = NULL;
 //	
@@ -880,20 +883,21 @@ static void node_segment_set()
 	return;
 }
 
-static void node_segment_unset()
+static void node_segment_unset(void)
 {
 	return;
 }
+#endif
 
 static void dump_srv6_chunks(struct list *cs)
 {
 	struct listnode *node;
 	struct prefix_ipv6 *chunk;
-	struct in6_addr *tovpn4_sid;
-	struct in6_addr *tovpn6_sid;
+//	struct in6_addr *tovpn4_sid;
+//	struct in6_addr *tovpn6_sid;
 	char buf[256];
-	char buf_tovpn4_sid[256];
-	char buf_tovpn6_sid[256];
+//	char buf_tovpn4_sid[256];
+//	char buf_tovpn6_sid[256];
 	for (ALL_LIST_ELEMENTS_RO(cs, node, chunk)) {
 		prefix2str(chunk, buf, sizeof(buf));
 		marker_debug_fmsg("- %s\n", buf);
@@ -1049,9 +1053,9 @@ static bool alloc_new_sid(uint32_t index,
 static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 {
 	struct stream *s = NULL;
-	struct isis *isis;
-	struct listnode *node;
-	struct prefix_ipv6 *c;
+//	struct isis *isis;
+//	struct listnode *node;
+//	struct prefix_ipv6 *c;
 	struct srv6_locator_chunk s6c = {};
 	struct prefix_ipv6 *chunk = NULL;
 
