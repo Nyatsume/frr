@@ -37,6 +37,7 @@
 #include "isisd/isis_misc.h"
 #include "isisd/isis_circuit.h"
 #include "isisd/isis_csm.h"
+#include "isisd/isis_zebra.h"
 
 #ifndef VTYSH_EXTRACT_PL
 #include "isisd/isis_cli_clippy.c"
@@ -110,8 +111,6 @@ DEFPY(isis_srv6_locator,
 	return CMD_SUCCESS;
 }
 
-extern struct in6_addr node_sid;
-extern struct in6_addr adj_sids[SRV6_MAX_SIDS];
 
 DEFUN(show_srv6, show_srv6_cmd,
 		"show isis segment-routing srv6",
@@ -124,12 +123,12 @@ DEFUN(show_srv6, show_srv6_cmd,
 
 	char b[256];
 	vty_out(vty, "node-sid: %s\n",
-			inet_ntop(AF_INET6, &node_sid, b, 256));
+			inet_ntop(AF_INET6, &node_segment.sid, b, 256));
 	for (int i = 0; i < SRV6_MAX_SIDS; i++) {
 		if (sid_zero(&adj_sids[i]))
 			continue;
-		vty_out(vty, "adj-sid[%d]: %s\n", i,
-				inet_ntop(AF_INET6, &adj_sids[i], b, 256));
+//		vty_out(vty, "adj-sid[%d]: %s\n", i,
+//				inet_ntop(AF_INET6, &adj_sids[i], b, 256));
 	}
 
 

@@ -27,6 +27,17 @@
 extern struct zclient *zclient;
 
 extern int isis_zebra_srv6_manager_get_locator_chunk(const char *name);
+struct isis_srv6_node_segment {
+	struct in6_addr sid;
+};
+
+struct isis_srv6_adj_segment {
+	struct in6_addr sid;
+	struct in6_addr adj_addr;
+};
+
+extern struct isis_srv6_node_segment node_segment;
+extern struct isis_srv6_adj_segment adj_sids[SRV6_MAX_SIDS];
 
 struct label_chunk {
 	uint32_t start;
