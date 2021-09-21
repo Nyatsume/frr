@@ -882,28 +882,49 @@ static bool adj_segment_is_exist(struct in6_addr *adj_addr)
 	return false;
 }
 
-#if 0
 static void adj_segment_set(struct in6_addr *adj_addr)
 {
-	// TODO(nyatsume)
+	struct in6_addr sid;
+	int i;
 
-	// Allocate SID
-//	 struct in6_addr sid;
-//	 bool ret = alloc_new_sid(0, &sid);
-//	 if (!ret) {
-//	 	marker_debug_msg("failed");
-//	 	continue;
-//	 }
-//
-//	 enum seg6local_action_t act;
-//	 struct seg6local_context ctx = {};
-//	 ctx.nh6 = *adj->ipv6_addresses;
-//	 act = ZEBRA_SEG6_LOCAL_ACTION_END_X;
-//	 zclient_send_localsid(zclient, &sid, 2, act, &ctx);
-	// SET SID
-	return;
+	if (adj_segment_is_exist(adj_addr))
+		return;
+
+	bool ret = alloc_new_sid(0, &sid);
+	if (!ret) {
+		marker_debug_msg("failed");
+		return;
+	}
+
+	enum seg6local_action_t act;
+	struct seg6local_context ctx = {};
+
+#if 0
+	for (i = 0; i < SRV6_MAX_SIDS; i++) {
+		if (!sid_zero(&adj_segment[i].sid))
+			continue;
+		adj_segment[i].sid = sid;
+		adj_segment[i].adj_addr = *adj_addr;
+		break;
+	}
+	ctx.nh6 = *adj_addr;
+	act = ZEBRA_SEG6_LOCAL_ACTION_END_X;
+	zclient_send_localsid(zclient, &sid, 2, act, &ctx);
+#endif
+
+	for (i = 0; i < SRV6_MAX_SIDS; i++) {
+		if (!sid_zero(&adj_segment[i].sid))
+			continue;
+		adj_segment[i].sid = sid;
+		adj_segment[i].adj_addr = *adj_addr;
+		ctx.nh6 = *adj_addr;
+		act = ZEBRA_SEG6_LOCAL_ACTION_END_X;
+		zclient_send_localsid(zclient, &sid, 2, act, &ctx);
+		break;
+	}
 }
 
+#if 0
 static void adj_segment_unset(struct in6_addr *adj_addr)
 {
 	return;
@@ -930,9 +951,9 @@ static void node_segment_set(void)
 	if (!ret)
 		marker_debug_msg("failed");
 
+	node_segment.sid = sid;
 	act = ZEBRA_SEG6_LOCAL_ACTION_END;
 	zclient_send_localsid(zclient, &sid, 2, act, &ctx);
-	node_segment.sid = sid;
 }
 
 #if 0
@@ -1064,35 +1085,11 @@ static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 //	struct isis_circuit *circuit;
 //	int i = 0;
 
-	for (ALL_LIST_ELEMENTS_RO(im->isis, node, isis)) {
-		for (ALL_LIST_ELEMENTS_RO(isis->area_list, anode, area)) {
-			for (ALL_LIST_ELEMENTS_RO(area->adjacency_list, cnode, adj)) {
-				if (adj && adj->ipv6_addresses) {
-					char b[256];
-					inet_ntop(AF_INET6, adj->ipv6_addresses, b, 256);
-
-					if (adj_segment_is_exist( adj->ipv6_addresses))
-						continue;
-#if 0
-					*adj_segment[i++].adj_addr = *adj->ipv6_addresses;
-					// TODO MOVE on adj_segment_set()
-					struct in6_addr sid;
-					bool ret = alloc_new_sid(0, &sid);
-					if (!ret) {
-						marker_debug_msg("failed");
-						continue;
-					}
-
-					enum seg6local_action_t act;
-					struct seg6local_context ctx = {};
-					ctx.nh6 = *adj->ipv6_addresses;
-					act = ZEBRA_SEG6_LOCAL_ACTION_END_X;
-					zclient_send_localsid(zclient, &sid, 2, act, &ctx);
-#endif
-				}
-			}
-		}
-	}
+	for (ALL_LIST_ELEMENTS_RO(im->isis, node, isis))
+		for (ALL_LIST_ELEMENTS_RO(isis->area_list, anode, area))
+			for (ALL_LIST_ELEMENTS_RO(area->adjacency_list, cnode, adj))
+				if (adj && adj->ipv6_addresses)
+					adj_segment_set(adj->ipv6_addresses);
 }
 
 int isis_zebra_srv6_manager_get_locator_chunk(const char *name)

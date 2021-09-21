@@ -125,10 +125,10 @@ DEFUN(show_srv6, show_srv6_cmd,
 	vty_out(vty, "node-sid: %s\n",
 			inet_ntop(AF_INET6, &node_segment.sid, b, 256));
 	for (int i = 0; i < SRV6_MAX_SIDS; i++) {
-		if (sid_zero(&adj_sids[i]))
+		if (sid_zero(&adj_segment[i].sid))
 			continue;
-//		vty_out(vty, "adj-sid[%d]: %s\n", i,
-//				inet_ntop(AF_INET6, &adj_sids[i], b, 256));
+		vty_out(vty, "adj-sid[%d]: %s\n", i,
+				inet_ntop(AF_INET6, &adj_segment[i].sid, b, 256));
 	}
 
 

@@ -1074,6 +1074,7 @@ DEFUN(show_sr_node, show_sr_node_cmd,
 	return CMD_SUCCESS;
 }
 
+#if 0
 static void sid_register(struct isis *isis, const struct in6_addr *sid,
 			 const char *locator_name)
 {
@@ -1084,6 +1085,7 @@ static void sid_register(struct isis *isis, const struct in6_addr *sid,
 		 "%s", locator_name);
 	listnode_add(isis->srv6_functions, func);
 }
+#endif
 
 //static bool sid_exist(struct isis *isis, const struct in6_addr *sid)
 //{
@@ -1095,6 +1097,8 @@ static void sid_register(struct isis *isis, const struct in6_addr *sid,
 //			return true;
 //	return false;
 //}
+
+# if 0
 static bool alloc_new_sid(struct isis *isis, uint32_t index,
 			  struct in6_addr *sid)
 {
@@ -1134,6 +1138,8 @@ static bool alloc_new_sid(struct isis *isis, uint32_t index,
 	*sid = sid_buf;
 	return true;
 }
+#endif
+
 void isis_srv6_locator_add(struct isis_srv6_locator *locator, struct isis_area *area)
 {
 	struct isis_srv6_locator *tmp;
@@ -1183,6 +1189,9 @@ struct isis_srv6_locator *isis_srv6_locator_alloc(const char *name)
 	}
 	return locator;
 }
+
+
+
 /* --- IS-IS Segment Routing Management function ---------------------------- */
 
 /**

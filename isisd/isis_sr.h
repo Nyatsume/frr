@@ -245,6 +245,7 @@ struct isis_srv6_locator {
 	struct list *functions;
 };
 
+extern void isis_srv6_chunk_init(struct isis *isis);
 extern void isis_srv6_locator_add(struct isis_srv6_locator *locator, struct isis_area *area);
 extern struct isis_srv6_locator *isis_srv6_locator_lookup(const char *name, struct isis_area *area);
 extern struct isis_srv6_locator *isis_srv6_locator_lookup_zebra(const char *name, struct isis_area *area);

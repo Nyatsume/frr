@@ -37,7 +37,7 @@ struct isis_srv6_adj_segment {
 };
 
 extern struct isis_srv6_node_segment node_segment;
-extern struct isis_srv6_adj_segment adj_sids[SRV6_MAX_SIDS];
+extern struct isis_srv6_adj_segment adj_segment[SRV6_MAX_SIDS];
 
 struct label_chunk {
 	uint32_t start;
