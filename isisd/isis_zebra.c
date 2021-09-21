@@ -899,19 +899,6 @@ static void adj_segment_set(struct in6_addr *adj_addr)
 	enum seg6local_action_t act;
 	struct seg6local_context ctx = {};
 
-#if 0
-	for (i = 0; i < SRV6_MAX_SIDS; i++) {
-		if (!sid_zero(&adj_segment[i].sid))
-			continue;
-		adj_segment[i].sid = sid;
-		adj_segment[i].adj_addr = *adj_addr;
-		break;
-	}
-	ctx.nh6 = *adj_addr;
-	act = ZEBRA_SEG6_LOCAL_ACTION_END_X;
-	zclient_send_localsid(zclient, &sid, 2, act, &ctx);
-#endif
-
 	for (i = 0; i < SRV6_MAX_SIDS; i++) {
 		if (!sid_zero(&adj_segment[i].sid))
 			continue;
@@ -933,7 +920,6 @@ static void adj_segment_unset(struct in6_addr *adj_addr)
 
 static bool node_segment_is_exist(void)
 {
-	// TODO(nyatsume)
 	return !sid_zero(&node_segment.sid);
 }
 
@@ -967,11 +953,7 @@ static void dump_srv6_chunks(struct list *cs)
 {
 	struct listnode *node;
 	struct prefix_ipv6 *chunk;
-//	struct in6_addr *tovpn4_sid;
-//	struct in6_addr *tovpn6_sid;
 	char buf[256];
-//	char buf_tovpn4_sid[256];
-//	char buf_tovpn6_sid[256];
 	for (ALL_LIST_ELEMENTS_RO(cs, node, chunk)) {
 		prefix2str(chunk, buf, sizeof(buf));
 		marker_debug_fmsg("- %s\n", buf);
