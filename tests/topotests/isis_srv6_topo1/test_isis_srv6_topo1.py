@@ -151,9 +151,32 @@ def setup_testcase(msg):
         pytest.skip(tgen.errors)
     return tgen
 
+def open_json_file(filename):
+    try:
+        with open(filename, "r") as f:
+            return json.load(f)
+    except IOError:
+        assert False, "Could not read file {}".format(filename)
 
-def test_dummy():
-    assert True, "dummy"
+
+def test_rib():
+    def _check(name, cmd, expected_file):
+        logger.info("polling")
+        tgen = get_topogen()
+        router = tgen.gears[name]
+        output = json.loads(router.vtysh_cmd(cmd))
+        expected = open_json_file("{}/{}".format(CWD, expected_file))
+        return topotest.json_cmp(output, expected)
+
+    def check(name, cmd, expected_file):
+        logger.info('[+] check {} "{}" {}'.format(name, cmd, expected_file))
+        tgen = get_topogen()
+        func = functools.partial(_check, name, cmd, expected_file)
+        success, result = topotest.run_and_expect(func, None, count=10, wait=0.5)
+        assert result is None, "Failed"
+
+    check("r1", "show isis seg srv6 json", "r1/sid.json")
+    check("r1", "show ipv6 route json", "r1/route.json")
 
 
 if __name__ == "__main__":
