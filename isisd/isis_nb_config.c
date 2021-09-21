@@ -2421,27 +2421,6 @@ int isis_srv6_srv6_locator_create(enum nb_event event, const struct lyd_node *dn
 
 int isis_srv6_srv6_locator_destroy(enum nb_event event, const struct lyd_node *dnode)
 {
-//	struct isis_area *area;
-//	const char *area_tag, *locname;
-//	struct isis_srv6_locator *locator;
-//	area_tag = yang_dnode_get_string(dnode->parent->parent, "./area-tag");
-//	locname = yang_dnode_get_string(dnode, "./srv6-locator-name");
-//	area = isis_area_lookup(area_tag);
-//	switch (event) {
-//		case NB_EV_VALIDATE:
-//			if (!isis_srv6_locator_lookup(locname, area)) {
-//				return NB_ERR_VALIDATION;
-//			}
-//			break;
-//		case NB_EV_PREPARE:
-//		case NB_EV_ABORT:
-//			break;
-//		case NB_EV_APPLY:
-//			locator = isis_srv6_locator_lookup(locname, area);
-//			isis_srv6_locator_delete(locator, area);
-//			isis_srv6_locator_free(locator);
-//			break;
-//	}
 	zlog_debug("destroyed");
 	return NB_OK;
 }
