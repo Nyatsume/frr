@@ -66,6 +66,7 @@ import os
 import sys
 import pytest
 import json
+import time
 from functools import partial
 
 # Save the Current Working Directory to find configuration files.
@@ -160,23 +161,37 @@ def open_json_file(filename):
 
 
 def test_rib():
+    tgen = get_topogen()
+    if tgen.routers_have_failure():
+        pytest.skip(tgen.errors)
+    router = tgen.gears["r1"]
     def _check(name, cmd, expected_file):
         logger.info("polling")
         tgen = get_topogen()
         router = tgen.gears[name]
         output = json.loads(router.vtysh_cmd(cmd))
+        print(output)
         expected = open_json_file("{}/{}".format(CWD, expected_file))
+        print(expected)
         return topotest.json_cmp(output, expected)
 
     def check(name, cmd, expected_file):
         logger.info('[+] check {} "{}" {}'.format(name, cmd, expected_file))
         tgen = get_topogen()
-        func = functools.partial(_check, name, cmd, expected_file)
+        func = partial(_check, name, cmd, expected_file)
         success, result = topotest.run_and_expect(func, None, count=10, wait=0.5)
         assert result is None, "Failed"
 
+    time.sleep(20)
+    router.vtysh_cmd(
+		"""
+		configure terminal
+		 router isis 1
+		  srv6 locator loc1
+		"""
+	)
     check("r1", "show isis seg srv6 json", "r1/sid.json")
-    check("r1", "show ipv6 route json", "r1/route.json")
+   # check("r1", "show ipv6 route json", "r1/route.json")
 
 
 if __name__ == "__main__":

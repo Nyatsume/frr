@@ -95,14 +95,43 @@ DEFPY(isis_srv6_locator,
 
 
 DEFUN(show_srv6, show_srv6_cmd,
-		"show isis segment-routing srv6",
+		"show isis segment-routing srv6 [json]",
 		SHOW_STR PROTO_HELP
 		"Segment-Routing\n"
-		"Segment-Routing srv6\n")
+		"Segment-Routing srv6\n"
+		JSON_STR)
 {
-	vty_out(vty, "locator: %s\n",srv6_locator);
+	bool uj = use_json(argc, argv);
+	json_object *json = NULL;
+	json_object *adj_sids = NULL;
 
 	char b[256];
+
+	if (uj) {
+		json = json_object_new_object();
+		adj_sids = json_object_new_array();
+	//	sid_json = json_object_new_object();
+		json_object_string_add(json, "locator", srv6_locator);
+		json_object_string_add(json, "node-sid", 
+				inet_ntop(AF_INET6, &node_segment.sid, b, 256));
+
+		for (int i = 0; i < SRV6_MAX_SIDS; i++) {
+			if (sid_zero(&adj_segment[i].sid)){
+				marker_debug_fmsg("adj_segment[%d] ignored\n",i);
+				continue;
+			}
+			json_object_array_add(adj_sids, json_object_new_string(inet_ntop(AF_INET6, &adj_segment[i].sid, b, 256)));
+			marker_debug_fmsg("adj_segment[%d] added to json\n", i);
+		}
+		json_object_object_add(json, "adj_sids", adj_sids);
+		vty_out(vty, "%s\n",
+				json_object_to_json_string_ext(
+					json, JSON_C_TO_STRING_PRETTY));
+		json_object_free(json);
+		return CMD_SUCCESS;
+	}
+	vty_out(vty, "locator: %s\n",srv6_locator);
+
 	vty_out(vty, "node-sid: %s\n",
 			inet_ntop(AF_INET6, &node_segment.sid, b, 256));
 	for (int i = 0; i < SRV6_MAX_SIDS; i++) {

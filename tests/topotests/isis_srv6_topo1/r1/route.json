@@ -16,7 +16,6 @@
       "internalFlags":8,
       "internalNextHopNum":1,
       "internalNextHopActiveNum":1,
-      "uptime":"00:04:58",
       "nexthops":[
         {
           "flags":3,
@@ -46,7 +45,6 @@
       "internalFlags":8,
       "internalNextHopNum":1,
       "internalNextHopActiveNum":1,
-      "uptime":"00:04:58",
       "nexthops":[
         {
           "flags":3,
@@ -76,7 +74,6 @@
       "internalFlags":8,
       "internalNextHopNum":1,
       "internalNextHopActiveNum":1,
-      "uptime":"00:04:58",
       "nexthops":[
         {
           "flags":3,
@@ -106,7 +103,6 @@
       "internalFlags":8,
       "internalNextHopNum":1,
       "internalNextHopActiveNum":1,
-      "uptime":"00:04:51",
       "nexthops":[
         {
           "flags":3,
@@ -138,7 +134,6 @@
       "internalFlags":8,
       "internalNextHopNum":1,
       "internalNextHopActiveNum":1,
-      "uptime":"00:04:51",
       "nexthops":[
         {
           "flags":3,
@@ -170,7 +165,6 @@
       "internalFlags":8,
       "internalNextHopNum":1,
       "internalNextHopActiveNum":1,
-      "uptime":"00:04:51",
       "nexthops":[
         {
           "flags":3,
@@ -202,7 +196,6 @@
       "internalFlags":8,
       "internalNextHopNum":1,
       "internalNextHopActiveNum":1,
-      "uptime":"00:04:51",
       "nexthops":[
         {
           "flags":3,
@@ -234,7 +227,6 @@
       "internalFlags":8,
       "internalNextHopNum":2,
       "internalNextHopActiveNum":2,
-      "uptime":"00:04:46",
       "nexthops":[
         {
           "flags":3,
@@ -276,7 +268,6 @@
       "internalFlags":9,
       "internalNextHopNum":1,
       "internalNextHopActiveNum":1,
-      "uptime":"00:04:59",
       "nexthops":[
         {
           "flags":3,
@@ -313,7 +304,6 @@
       "internalFlags":9,
       "internalNextHopNum":1,
       "internalNextHopActiveNum":1,
-      "uptime":"00:00:18",
       "nexthops":[
         {
           "flags":3,
@@ -350,7 +340,6 @@
       "internalFlags":9,
       "internalNextHopNum":1,
       "internalNextHopActiveNum":1,
-      "uptime":"00:00:18",
       "nexthops":[
         {
           "flags":3,
@@ -385,7 +374,6 @@
       "internalFlags":0,
       "internalNextHopNum":1,
       "internalNextHopActiveNum":1,
-      "uptime":"00:04:57",
       "nexthops":[
         {
           "flags":3,
@@ -411,7 +399,6 @@
       "internalFlags":0,
       "internalNextHopNum":1,
       "internalNextHopActiveNum":1,
-      "uptime":"00:04:58",
       "nexthops":[
         {
           "flags":3,
@@ -437,7 +424,6 @@
       "internalFlags":0,
       "internalNextHopNum":1,
       "internalNextHopActiveNum":1,
-      "uptime":"00:04:58",
       "nexthops":[
         {
           "flags":3,
@@ -465,7 +451,6 @@
       "internalFlags":8,
       "internalNextHopNum":1,
       "internalNextHopActiveNum":1,
-      "uptime":"00:04:59",
       "nexthops":[
         {
           "flags":3,
