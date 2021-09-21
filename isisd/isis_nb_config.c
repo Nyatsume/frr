@@ -56,8 +56,6 @@
 DEFINE_MTYPE_STATIC(ISISD, ISIS_MPLS_TE,    "ISIS MPLS_TE parameters");
 DEFINE_MTYPE_STATIC(ISISD, ISIS_PLIST_NAME, "ISIS prefix-list name");
 
-
-
 /*
  * XPath: /frr-isisd:isis/instance
  */
@@ -2383,7 +2381,6 @@ int isis_instance_segment_routing_prefix_sid_map_prefix_sid_n_flag_clear_modify(
 /*
  * XPath: /frr-isisd:isis/instance/srv6/srv6-locator
  */
-
 int isis_srv6_srv6_locator_create(enum nb_event event, const struct lyd_node *dnode, union nb_resource *resource)
 {
 

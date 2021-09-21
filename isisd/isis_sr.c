@@ -1087,16 +1087,6 @@ static void sid_register(struct isis *isis, const struct in6_addr *sid,
 }
 #endif
 
-//static bool sid_exist(struct isis *isis, const struct in6_addr *sid)
-//{
-//	struct listnode *node;
-//	struct isis_srv6_function *func;
-//
-//	for (ALL_LIST_ELEMENTS_RO(isis->srv6_functions, node, func))
-//		if (sid_same(&func->sid, sid))
-//			return true;
-//	return false;
-//}
 
 # if 0
 static bool alloc_new_sid(struct isis *isis, uint32_t index,
@@ -1189,8 +1179,6 @@ struct isis_srv6_locator *isis_srv6_locator_alloc(const char *name)
 	}
 	return locator;
 }
-
-
 
 /* --- IS-IS Segment Routing Management function ---------------------------- */
 
@@ -1386,7 +1374,6 @@ void isis_sr_init(void)
 	hook_register(isis_adj_ip_disabled_hook, sr_adj_ip_disabled);
 	hook_register(isis_if_new_hook, sr_if_new_hook);
 }
-
 
 void isis_srv6_chunk_init(struct isis *isis)
 {

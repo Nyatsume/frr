@@ -138,7 +138,7 @@ const struct frr_yang_module_info frr_isisd_info = {
 				.modify = isis_instance_lsp_refresh_interval_level_2_modify,
 			},
 		},
-			{
+		{
 			.xpath = "/frr-isisd:isis/instance/lsp/timers/level-2/maximum-lifetime",
 			.cbs = {
 				.modify = isis_instance_lsp_maximum_lifetime_level_2_modify,
@@ -932,7 +932,6 @@ const struct frr_yang_module_info frr_isisd_info = {
 				.modify = lib_interface_isis_multi_topology_ipv6_dstsrc_modify,
 			},
 		},
-	
 		{
 			.xpath = "/frr-isisd:isis/instance/srv6/srv6-locator",
 			.cbs = {
@@ -942,8 +941,6 @@ const struct frr_yang_module_info frr_isisd_info = {
 				.modify = isis_srv6_srv6_locator_modify,
 			}
 		},
-
-	
 		{
 			.xpath = "/frr-interface:lib/interface/frr-isisd:isis/fast-reroute",
 			.cbs = {
