@@ -128,6 +128,17 @@ static bool alloc_new_sid(uint32_t index,
 	return true;
 }
 
+int srv6_adj_ip_enabled(struct isis_adjacency *adj, int family)
+{
+/* TODO
+	if (!adj->circuit->area->srdb.enabled)
+		return 0;
+*/
+	adj_segment_set(adj->ipv6_addresses);
+	marker_debug_msg("call");
+
+	return 0;
+}
 /* Router-id update message from zebra. */
 static int isis_router_id_update_zebra(ZAPI_CALLBACK_ARGS)
 {
@@ -882,7 +893,7 @@ static bool adj_segment_is_exist(struct in6_addr *adj_addr)
 	return false;
 }
 
-static void adj_segment_set(struct in6_addr *adj_addr)
+void adj_segment_set(struct in6_addr *adj_addr)
 {
 	struct in6_addr sid;
 	int i;
@@ -983,6 +994,7 @@ static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 	dump_srv6_chunks(srv6_locator_chunks);
 	node_segment_set();
 
+#if 0
 	// adjs-sid
 	struct isis *isis;
 	struct listnode *node;
@@ -998,8 +1010,9 @@ static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 			for (ALL_LIST_ELEMENTS_RO(area->adjacency_list, cnode, adj))
 				if (adj && adj->ipv6_addresses)
 					adj_segment_set(adj->ipv6_addresses);
-}
 
+#endif
+}
 int isis_zebra_srv6_manager_get_locator_chunk(const char *name)
 {
 	return srv6_manager_get_locator_chunk(zclient, name);

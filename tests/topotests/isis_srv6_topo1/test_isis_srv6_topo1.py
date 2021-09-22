@@ -182,14 +182,14 @@ def test_rib():
         success, result = topotest.run_and_expect(func, None, count=10, wait=0.5)
         assert result is None, "Failed"
 
-    time.sleep(20)
-    router.vtysh_cmd(
-		"""
-		configure terminal
-		 router isis 1
-		  srv6 locator loc1
-		"""
-	)
+#    time.sleep(20)
+#    router.vtysh_cmd(
+#		"""
+#		configure terminal
+#		 router isis 1
+#		  srv6 locator loc1
+#		"""
+#	)
     check("r1", "show isis seg srv6 json", "r1/sid.json")
    # check("r1", "show ipv6 route json", "r1/route.json")
 

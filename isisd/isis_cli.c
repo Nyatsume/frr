@@ -128,24 +128,18 @@ DEFUN(show_srv6, show_srv6_cmd,
 		adj_segments_json = json_object_new_array();
 	//	sid_json = json_object_new_object();
 		json_object_string_add(json, "locator", srv6_locator);
-		marker_debug_msg("call");
 		json_object_string_add(node_segment_json, "sid", inet_ntop(AF_INET6, &node_segment.sid, b, 256));
-		marker_debug_msg("call");
 		json_object_object_add(json, "node_segment", node_segment_json);
-		marker_debug_msg("call");
 		//json_object_string_add(json, "node-sid", 
 		//		inet_ntop(AF_INET6, &node_segment.sid, b, 256));
 		json_object_object_add(json, "adj_segments", adj_segments_json);
-		marker_debug_msg("call");
 
 
 		for (int i = 0; i < SRV6_MAX_SIDS; i++) {
 			if (sid_zero(&adj_segment[i].sid))
 				continue;
 			adj_segments_json_per_sid = adj_segments_json_add(&adj_segment[i]);
-		marker_debug_msg("call");
 			json_object_array_add(adj_segments_json, adj_segments_json_per_sid);
-		marker_debug_msg("call");
 		}
 		vty_out(vty, "%s\n",
 				json_object_to_json_string_ext(
