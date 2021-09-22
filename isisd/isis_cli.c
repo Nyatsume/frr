@@ -93,6 +93,18 @@ DEFPY(isis_srv6_locator,
 	return CMD_SUCCESS;
 }
 
+json_object *adj_segments_json_add(struct isis_srv6_adj_segment *adj_seg)
+{
+	char b[256];
+
+	json_object *adj_segments_json_per_sid = NULL;
+	adj_segments_json_per_sid = json_object_new_object();
+	json_object_string_add(adj_segments_json_per_sid, "sid", inet_ntop(AF_INET6,adj_seg->sid.s6_addr, b, 256));
+	json_object_string_add(adj_segments_json_per_sid, "peer", inet_ntop(AF_INET6, adj_seg->adj_addr.s6_addr, b, 256));
+
+	return adj_segments_json_per_sid;
+}
+
 
 DEFUN(show_srv6, show_srv6_cmd,
 		"show isis segment-routing srv6 [json]",
@@ -103,31 +115,44 @@ DEFUN(show_srv6, show_srv6_cmd,
 {
 	bool uj = use_json(argc, argv);
 	json_object *json = NULL;
-	json_object *adj_sids = NULL;
+	json_object *node_segment_json = NULL;
+	json_object *adj_segments_json = NULL;
+	json_object *adj_segments_json_per_sid = NULL;
+
 
 	char b[256];
 
 	if (uj) {
 		json = json_object_new_object();
-		adj_sids = json_object_new_array();
+		node_segment_json = json_object_new_object();
+		adj_segments_json = json_object_new_array();
 	//	sid_json = json_object_new_object();
 		json_object_string_add(json, "locator", srv6_locator);
-		json_object_string_add(json, "node-sid", 
-				inet_ntop(AF_INET6, &node_segment.sid, b, 256));
+		marker_debug_msg("call");
+		json_object_string_add(node_segment_json, "sid", inet_ntop(AF_INET6, &node_segment.sid, b, 256));
+		marker_debug_msg("call");
+		json_object_object_add(json, "node_segment", node_segment_json);
+		marker_debug_msg("call");
+		//json_object_string_add(json, "node-sid", 
+		//		inet_ntop(AF_INET6, &node_segment.sid, b, 256));
+		json_object_object_add(json, "adj_segments", adj_segments_json);
+		marker_debug_msg("call");
+
 
 		for (int i = 0; i < SRV6_MAX_SIDS; i++) {
-			if (sid_zero(&adj_segment[i].sid)){
-				marker_debug_fmsg("adj_segment[%d] ignored\n",i);
+			if (sid_zero(&adj_segment[i].sid))
 				continue;
-			}
-			json_object_array_add(adj_sids, json_object_new_string(inet_ntop(AF_INET6, &adj_segment[i].sid, b, 256)));
-			marker_debug_fmsg("adj_segment[%d] added to json\n", i);
+			adj_segments_json_per_sid = adj_segments_json_add(&adj_segment[i]);
+		marker_debug_msg("call");
+			json_object_array_add(adj_segments_json, adj_segments_json_per_sid);
+		marker_debug_msg("call");
 		}
-		json_object_object_add(json, "adj_sids", adj_sids);
 		vty_out(vty, "%s\n",
 				json_object_to_json_string_ext(
 					json, JSON_C_TO_STRING_PRETTY));
-		json_object_free(json);
+		marker_debug_msg("call");
+	//	json_object_free(json);
+	//	marker_debug_msg("call");
 		return CMD_SUCCESS;
 	}
 	vty_out(vty, "locator: %s\n",srv6_locator);
