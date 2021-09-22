@@ -18,10 +18,7 @@
       "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
-          "fib":true,
           "directlyConnected":true,
-          "interfaceIndex":2,
           "interfaceName":"eth2",
           "active":true
         }
@@ -47,10 +44,7 @@
       "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
-          "fib":true,
           "directlyConnected":true,
-          "interfaceIndex":3,
           "interfaceName":"eth0",
           "active":true
         }
@@ -76,10 +70,7 @@
       "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
-          "fib":true,
           "directlyConnected":true,
-          "interfaceIndex":4,
           "interfaceName":"eth1",
           "active":true
         }
@@ -105,11 +96,7 @@
       "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
-          "fib":true,
-          "ip":"fe80::10bd:edff:fe82:f7d8",
           "afi":"ipv6",
-          "interfaceIndex":3,
           "interfaceName":"eth0",
           "active":true,
           "weight":1
@@ -136,11 +123,7 @@
       "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
-          "fib":true,
-          "ip":"fe80::10bd:edff:fe82:f7d8",
           "afi":"ipv6",
-          "interfaceIndex":3,
           "interfaceName":"eth0",
           "active":true,
           "weight":1
@@ -167,11 +150,7 @@
       "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
-          "fib":true,
-          "ip":"fe80::781b:1ff:feb6:4f31",
           "afi":"ipv6",
-          "interfaceIndex":4,
           "interfaceName":"eth1",
           "active":true,
           "weight":1
@@ -198,11 +177,7 @@
       "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
-          "fib":true,
-          "ip":"fe80::781b:1ff:feb6:4f31",
           "afi":"ipv6",
-          "interfaceIndex":4,
           "interfaceName":"eth1",
           "active":true,
           "weight":1
@@ -229,22 +204,12 @@
       "internalNextHopActiveNum":2,
       "nexthops":[
         {
-          "flags":3,
-          "fib":true,
-          "ip":"fe80::10bd:edff:fe82:f7d8",
           "afi":"ipv6",
-          "interfaceIndex":3,
           "interfaceName":"eth0",
           "active":true,
           "weight":1
         },
         {
-          "flags":3,
-          "fib":true,
-          "ip":"fe80::781b:1ff:feb6:4f31",
-          "afi":"ipv6",
-          "interfaceIndex":4,
-          "interfaceName":"eth1",
           "active":true,
           "weight":1
         }
@@ -270,10 +235,6 @@
       "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
-          "fib":true,
-          "directlyConnected":true,
-          "interfaceIndex":2,
           "interfaceName":"eth2",
           "active":true,
           "weight":1,
@@ -306,10 +267,7 @@
       "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
-          "fib":true,
           "directlyConnected":true,
-          "interfaceIndex":2,
           "interfaceName":"eth2",
           "active":true,
           "weight":1,
@@ -342,10 +300,7 @@
       "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
-          "fib":true,
           "directlyConnected":true,
-          "interfaceIndex":2,
           "interfaceName":"eth2",
           "active":true,
           "weight":1,
@@ -376,10 +331,7 @@
       "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
-          "fib":true,
           "directlyConnected":true,
-          "interfaceIndex":4,
           "interfaceName":"eth1",
           "active":true
         }
@@ -401,10 +353,7 @@
       "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
-          "fib":true,
           "directlyConnected":true,
-          "interfaceIndex":2,
           "interfaceName":"eth2",
           "active":true
         }
@@ -426,10 +375,7 @@
       "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
-          "fib":true,
           "directlyConnected":true,
-          "interfaceIndex":3,
           "interfaceName":"eth0",
           "active":true
         }
@@ -453,10 +399,7 @@
       "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
-          "fib":true,
           "directlyConnected":true,
-          "interfaceIndex":1,
           "interfaceName":"lo",
           "active":true
         }
