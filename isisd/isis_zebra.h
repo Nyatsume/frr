@@ -28,6 +28,7 @@ extern struct zclient *zclient;
 
 extern int isis_zebra_srv6_manager_get_locator_chunk(const char *name);
 extern int srv6_adj_ip_enabled(struct isis_adjacency *adj, int family);
+extern int srv6_adj_ip_disabled(struct isis_adjacency *adj, int family);
 struct isis_srv6_node_segment {
 	struct in6_addr sid;
 };
