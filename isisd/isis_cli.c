@@ -93,7 +93,7 @@ DEFPY(isis_srv6_locator,
 	return CMD_SUCCESS;
 }
 
-json_object *adj_segments_json_add(struct isis_srv6_adj_segment *adj_seg)
+static json_object *adj_segments_json_add(struct isis_srv6_adj_segment *adj_seg)
 {
 	char b[256];
 

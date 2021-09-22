@@ -1538,14 +1538,14 @@ spf_prefix_priority(struct isis_spftree *spftree, struct isis_vertex *vertex)
 static void spf_path_process(struct isis_spftree *spftree,
 			     struct isis_vertex *vertex)
 {
-	marker_debug_msg("call");
+	//marker_debug_msg("call");
 	struct isis_area *area = spftree->area;
 	int level = spftree->level;
 	char buff[VID2STR_BUFFER];
 
 	if (spftree->type == SPF_TYPE_TI_LFA && VTYPE_IS(vertex->type)
 	    && !CHECK_FLAG(spftree->flags, F_SPFTREE_NO_ADJACENCIES)) {
-		marker_debug_msg("call");
+		//marker_debug_msg("call");
 		if (listcount(vertex->Adj_N) > 0) {
 			struct isis_adjacency *adj;
 
@@ -1553,13 +1553,13 @@ static void spf_path_process(struct isis_spftree *spftree,
 				return;
 
 			adj = isis_adj_find(area, level, vertex->N.id);
-			marker_debug_msg("call");
+			//marker_debug_msg("call");
 			if (adj) {
-				marker_debug_msg("call");
+				//marker_debug_msg("call");
 				sr_adj_sid_add_single(adj, spftree->family,
 						true, vertex->Adj_N);
 				if (adj && adj->ipv6_addresses) {
-					marker_debug_msg("call");
+					//marker_debug_msg("call");
 					adj_segment_set(adj->ipv6_addresses);
 				}
 			}

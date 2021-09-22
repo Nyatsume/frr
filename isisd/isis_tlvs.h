@@ -108,6 +108,20 @@ struct isis_ipv6_reach {
 	struct isis_subtlvs *subtlvs;
 };
 
+struct isis_srv6_locator_info;
+struct isis_srv6_locator_info {
+	struct isis_srv6_locator_info *next;
+
+	uint32_t metric;
+	uint8_t flags;
+	uint8_t algorithm;
+	uint8_t loc_size;
+	struct in6_addr locator;
+
+	//uint8_t sub_tlv_len;
+	struct isis_subtlvs *subtlvs;
+};
+
 struct isis_protocols_supported {
 	uint8_t count;
 	uint8_t *protocols;
@@ -335,6 +349,7 @@ struct isis_tlvs {
 	struct isis_threeway_adj *threeway_adj;
 	struct isis_router_cap *router_cap;
 	struct isis_spine_leaf *spine_leaf;
+	struct isis_item_list srv6_locator_info;
 };
 
 enum isis_tlv_context {
@@ -364,6 +379,7 @@ enum isis_tlv_type {
 	ISIS_TLV_AUTH = 10,
 	ISIS_TLV_PURGE_ORIGINATOR = 13,
 	ISIS_TLV_EXTENDED_REACH = 22,
+	ISIS_TLV_SRV6_LOCATOR_INFO = 27,
 
 	ISIS_TLV_OLDSTYLE_IP_REACH = 128,
 	ISIS_TLV_PROTOCOLS_SUPPORTED = 129,
@@ -606,6 +622,9 @@ void isis_tlvs_add_ipv6_dstsrc_reach(struct isis_tlvs *tlvs, uint16_t mtid,
 				     struct prefix_ipv6 *dest,
 				     struct prefix_ipv6 *src,
 				     uint32_t metric);
+void isis_tlvs_add_srv6_locator_info(struct isis_tlvs *tlvs,
+		struct prefix_ipv6 *locator_prefix,
+		uint32_t metric, uint8_t flags, uint8_t algorithm);
 struct isis_ext_subtlvs *isis_alloc_ext_subtlvs(void);
 void isis_tlvs_add_adj_sid(struct isis_ext_subtlvs *exts,
 			   struct isis_adj_sid *adj);

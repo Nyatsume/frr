@@ -2383,7 +2383,7 @@ int isis_instance_segment_routing_prefix_sid_map_prefix_sid_n_flag_clear_modify(
  */
 int isis_srv6_srv6_locator_create(enum nb_event event, const struct lyd_node *dnode, union nb_resource *resource)
 {
-
+#if 0
 	marker_debug_msg("call");
 	struct isis_area *area;
 	const char *area_tag, *locname;
@@ -2416,6 +2416,7 @@ int isis_srv6_srv6_locator_create(enum nb_event event, const struct lyd_node *dn
 			break;
 	}
 	zlog_debug("created");
+#endif
 	return NB_OK;
 }
 

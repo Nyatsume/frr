@@ -1233,6 +1233,17 @@ static void lsp_build(struct isis_lsp *lsp, struct isis_area *area)
 
 	lsp_build_ext_reach(lsp, area);
 
+	if (true) {
+		struct prefix_ipv6 p;
+		p.prefixlen = 64;
+		inet_pton(AF_INET6, "A::", &p.prefix);
+		uint32_t metric = 0x0;
+		uint8_t flags = 0x0;
+		uint8_t algorithm = 0x0;
+		isis_tlvs_add_srv6_locator_info(lsp->tlvs, &p, metric,
+						flags, algorithm);
+	}
+
 	struct isis_tlvs *tlvs = lsp->tlvs;
 	lsp->tlvs = NULL;
 
