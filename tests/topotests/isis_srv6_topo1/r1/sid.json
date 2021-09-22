@@ -1,8 +1,16 @@
 {
   "locator":"loc1",
-  "node-sid":"2001:db8:f:1::100",
-  "adj_sids":[
-    "2001:db8:f:1::200",
-    "2001:db8:f:1::300"
+  "node_segment":{
+    "sid":"2001:db8:f:1::100"
+  },
+  "adj_segments":[
+    {
+      "sid":"2001:db8:f:1::200",
+      "peer":"fe80::44a8:beff:fe7b:cfc6"
+    },
+    {
+      "sid":"2001:db8:f:1::300",
+      "peer":"fe80::c8f2:d0ff:febe:6c12"
+    }
   ]
 }
