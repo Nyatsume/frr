@@ -1406,6 +1406,38 @@ static void dump_srv6_locator_info(struct isis_srv6_locator_info *l)
 	return ;
 }
 
+static void dump_srv6_segment_end(struct isis_srv6_sid_end *s)
+{
+	char b[256];
+
+	marker_debug_msg("=======");
+	marker_debug_fmsg("type:              %u", s->type);
+	marker_debug_fmsg("length:            %u", s->length);
+	marker_debug_fmsg("flags:             0x%02x", s->flags);
+	marker_debug_fmsg("endpoint_behavior: 0x%04x", s->endpoint_behavior);
+	marker_debug_fmsg("sids[0]:           %s",
+			  inet_ntop(AF_INET6, &s->sids[0], b, sizeof(b)));
+	marker_debug_msg("=======");
+	return;
+}
+
+static void dump_srv6_segment_end_x(struct isis_srv6_sid_end_x *s)
+{
+	char b[256];
+
+	marker_debug_msg("=======");
+	marker_debug_fmsg("type:              %u", s->type);
+	marker_debug_fmsg("length:            %u", s->length);
+	marker_debug_fmsg("flags:             0x%02x", s->flags);
+	marker_debug_fmsg("algorithm:         0x%02x", s->algorithm);
+	marker_debug_fmsg("weight:            0x%02x", s->weight);
+	marker_debug_fmsg("endpoint_behavior: 0x%04x", s->endpoint_behavior);
+	marker_debug_fmsg("sids[0]:           %s",
+			  inet_ntop(AF_INET6, &s->sids[0], b, sizeof(b)));
+	marker_debug_msg("=======");
+	return;
+}
+
 static void format_item_srv6_locator_info(uint16_t mtid, struct isis_item *i,
 			      struct sbuf *buf, int indent)
 {
@@ -1443,37 +1475,59 @@ static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 	l.flags = 0xee;
 	l.algorithm = 0xaa;
 	l.loc_size = 64;
-	l.locator.s6_addr[0] = 0x11;
-	l.locator.s6_addr[1] = 0x11;
-	l.locator.s6_addr[2] = 0x11;
-	l.locator.s6_addr[3] = 0x11;
-	l.locator.s6_addr[4] = 0x11;
-	l.locator.s6_addr[5] = 0x11;
-	l.locator.s6_addr[6] = 0x11;
-	l.locator.s6_addr[7] = 0x11;
-	l.locator.s6_addr[8] = 0x11;
-	l.locator.s6_addr[9] = 0x11;
-	l.locator.s6_addr[10] = 0x11;
-	l.locator.s6_addr[11] = 0x11;
-	l.locator.s6_addr[12] = 0x11;
-	l.locator.s6_addr[13] = 0x11;
-	l.locator.s6_addr[14] = 0x11;
-	l.locator.s6_addr[15] = 0x11;
+	for (int i = 0; i < 16; i++)
+		l.locator.s6_addr[i] = 0x11;
 
 	// TODO(slankdev)
 	stream_putw(s, 0);
-
 	stream_putl(s, l.metric);
 	stream_putc(s, l.flags);
 	stream_putc(s, l.algorithm);
 	stream_putc(s, l.loc_size);
-
 	uint8_t spl = (l.loc_size + 7) / 8;
 	stream_put(s, &l.locator, spl);
 
+	uint8_t sub_tlv_len = 22 + 24;
+	stream_putc(s, sub_tlv_len);
+
+	// SRv6 Node Segment
+	struct isis_srv6_sid_end node_segment;
+	node_segment.type = 4;
+	node_segment.length = 20; // ???
+	node_segment.flags = 0x00;
+	node_segment.endpoint_behavior = SRV6_END_BEHAVIOR_END;
+	for (int i = 0; i < 16; i++)
+		node_segment.sids[0].s6_addr[i] = 0x11;
+	stream_putc(s, node_segment.type);
+	stream_putc(s, node_segment.length);
+	stream_putc(s, node_segment.flags);
+	stream_putw(s, node_segment.endpoint_behavior);
+	stream_put(s, &node_segment.sids[0], 16);
 	stream_putc(s, 0);
 
+	// SRv6 Adj Segment
+	struct isis_srv6_sid_end_x adj_segments[SRV6_MAX_SIDS];
+	adj_segments[0].type = 43;
+	adj_segments[0].length = 22;
+	adj_segments[0].flags = 0x00;
+	adj_segments[0].algorithm = 22;
+	adj_segments[0].weight = 22;
+	adj_segments[0].endpoint_behavior = SRV6_END_BEHAVIOR_END_X;
+	for (int i = 0; i < 16; i++)
+		adj_segments[0].sids[0].s6_addr[i] = 0x33;
+	stream_putc(s, adj_segments[0].type);
+	stream_putc(s, adj_segments[0].length);
+	stream_putc(s, adj_segments[0].flags);
+	stream_putc(s, adj_segments[0].algorithm);
+	stream_putc(s, adj_segments[0].weight);
+	stream_putw(s, adj_segments[0].endpoint_behavior);
+	stream_put(s, &adj_segments[0].sids[0], 16);
+	stream_putc(s, 0);
+
+	// Finalize
 	dump_srv6_locator_info(&l);
+	dump_srv6_segment_end(&node_segment);
+	dump_srv6_segment_end_x(&adj_segments[0]);
 	return 0;
 }
 
@@ -1503,7 +1557,32 @@ static int unpack_item_srv6_locator_info(uint16_t mtid, uint8_t len,
 	uint8_t dummy = stream_getc(s);
 	(void)dummy;
 
+	// SRv6 Node Segment
+	struct isis_srv6_sid_end node_segment;
+	node_segment.type = stream_getc(s);
+	node_segment.length = stream_getc(s);
+	node_segment.flags = stream_getc(s);
+	node_segment.endpoint_behavior = stream_getw(s);
+	stream_get(&node_segment.sids[0], s, 16);
+	dummy = stream_getc(s);
+	(void)dummy;
+
+	// SRv6 Adj Segment
+	struct isis_srv6_sid_end_x adj_segments[SRV6_MAX_SIDS];
+	adj_segments[0].type = stream_getc(s);
+	adj_segments[0].length = stream_getc(s);
+	adj_segments[0].flags = stream_getc(s);
+	adj_segments[0].algorithm = stream_getc(s);
+	adj_segments[0].weight = stream_getc(s);
+	adj_segments[0].endpoint_behavior = stream_getw(s);
+	stream_get(&adj_segments[0].sids[0], s, 16);
+	dummy = stream_getc(s);
+	(void)dummy;
+
+	// finalization
 	dump_srv6_locator_info(rv);
+	dump_srv6_segment_end(&node_segment);
+	dump_srv6_segment_end_x(&adj_segments[0]);
 	format_item_srv6_locator_info(mtid, (struct isis_item *)rv, log,
 				      indent + 2);
 	append_item(&tlvs->srv6_locator_info, (struct isis_item *)rv);;

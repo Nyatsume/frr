@@ -27,6 +27,7 @@
 
 #include "openbsd-tree.h"
 #include "prefix.h"
+#include "lib/srv6.h"
 
 DECLARE_MTYPE(ISIS_SUBTLV);
 
@@ -212,6 +213,32 @@ struct isis_lan_adj_sid {
 	uint8_t weight;
 	uint8_t neighbor_id[ISIS_SYS_ID_LEN];
 	uint32_t sid;
+};
+
+/* draft-ietf-lsr-isis-srv6-extensions */
+
+struct isis_srv6_sid_end;
+struct isis_srv6_sid_end {
+	struct isis_srv6_sid_end *next;
+
+	uint8_t type;
+	uint8_t length;
+	uint8_t flags;
+	uint16_t endpoint_behavior;
+	struct in6_addr sids[SRV6_MAX_SIDS];
+};
+
+struct isis_srv6_sid_end_x;
+struct isis_srv6_sid_end_x {
+	struct isis_srv6_sid_end_x *next;
+
+	uint8_t type;
+	uint8_t length;
+	uint8_t flags;
+	uint8_t algorithm;
+	uint8_t weight;
+	uint16_t endpoint_behavior;
+	struct in6_addr sids[SRV6_MAX_SIDS];
 };
 
 /* RFC 4971 & RFC 7981 */
@@ -440,6 +467,10 @@ enum isis_tlv_type {
 	ISIS_SUBTLV_RES_BW = 37,
 	ISIS_SUBTLV_AVA_BW = 38,
 	ISIS_SUBTLV_USE_BW = 39,
+
+	/* draft-ietf-lsr-isis-srv6-extensions */
+	ISIS_SUBTLV_SID_END = 4,
+	ISIS_SUBTLV_SID_END_X = 43,
 
 	ISIS_SUBTLV_MAX = 40
 };

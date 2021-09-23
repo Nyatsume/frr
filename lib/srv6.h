@@ -43,6 +43,11 @@ enum seg6_mode_t {
 	L2ENCAP,
 };
 
+enum srv6_endpoint_behavior_t {
+	SRV6_END_BEHAVIOR_END   = 0x0001,
+	SRV6_END_BEHAVIOR_END_X = 0x0005,
+};
+
 enum seg6local_action_t {
 	ZEBRA_SEG6_LOCAL_ACTION_UNSPEC       = 0,
 	ZEBRA_SEG6_LOCAL_ACTION_END          = 1,
