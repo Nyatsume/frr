@@ -27,6 +27,7 @@
 
 #include "openbsd-tree.h"
 #include "prefix.h"
+#include "lib/srv6.h"
 
 DECLARE_MTYPE(ISIS_SUBTLV);
 
@@ -105,6 +106,20 @@ struct isis_ipv6_reach {
 
 	struct prefix_ipv6 prefix;
 
+	struct isis_subtlvs *subtlvs;
+};
+
+struct isis_srv6_locator_info;
+struct isis_srv6_locator_info {
+	struct isis_srv6_locator_info *next;
+
+	uint32_t metric;
+	uint8_t flags;
+	uint8_t algorithm;
+	uint8_t loc_size;
+	struct in6_addr locator;
+
+	//uint8_t sub_tlv_len;
 	struct isis_subtlvs *subtlvs;
 };
 
@@ -198,6 +213,32 @@ struct isis_lan_adj_sid {
 	uint8_t weight;
 	uint8_t neighbor_id[ISIS_SYS_ID_LEN];
 	uint32_t sid;
+};
+
+/* draft-ietf-lsr-isis-srv6-extensions */
+
+struct isis_srv6_sid_end;
+struct isis_srv6_sid_end {
+	struct isis_srv6_sid_end *next;
+
+	uint8_t type;
+	uint8_t length;
+	uint8_t flags;
+	uint16_t endpoint_behavior;
+	struct in6_addr sids[SRV6_MAX_SIDS];
+};
+
+struct isis_srv6_sid_end_x;
+struct isis_srv6_sid_end_x {
+	struct isis_srv6_sid_end_x *next;
+
+	uint8_t type;
+	uint8_t length;
+	uint8_t flags;
+	uint8_t algorithm;
+	uint8_t weight;
+	uint16_t endpoint_behavior;
+	struct in6_addr sids[SRV6_MAX_SIDS];
 };
 
 /* RFC 4971 & RFC 7981 */
@@ -335,6 +376,7 @@ struct isis_tlvs {
 	struct isis_threeway_adj *threeway_adj;
 	struct isis_router_cap *router_cap;
 	struct isis_spine_leaf *spine_leaf;
+	struct isis_item_list srv6_locator_info;
 };
 
 enum isis_tlv_context {
@@ -364,6 +406,7 @@ enum isis_tlv_type {
 	ISIS_TLV_AUTH = 10,
 	ISIS_TLV_PURGE_ORIGINATOR = 13,
 	ISIS_TLV_EXTENDED_REACH = 22,
+	ISIS_TLV_SRV6_LOCATOR_INFO = 27,
 
 	ISIS_TLV_OLDSTYLE_IP_REACH = 128,
 	ISIS_TLV_PROTOCOLS_SUPPORTED = 129,
@@ -424,6 +467,10 @@ enum isis_tlv_type {
 	ISIS_SUBTLV_RES_BW = 37,
 	ISIS_SUBTLV_AVA_BW = 38,
 	ISIS_SUBTLV_USE_BW = 39,
+
+	/* draft-ietf-lsr-isis-srv6-extensions */
+	ISIS_SUBTLV_SID_END = 4,
+	ISIS_SUBTLV_SID_END_X = 43,
 
 	ISIS_SUBTLV_MAX = 40
 };
@@ -606,6 +653,9 @@ void isis_tlvs_add_ipv6_dstsrc_reach(struct isis_tlvs *tlvs, uint16_t mtid,
 				     struct prefix_ipv6 *dest,
 				     struct prefix_ipv6 *src,
 				     uint32_t metric);
+void isis_tlvs_add_srv6_locator_info(struct isis_tlvs *tlvs,
+		struct prefix_ipv6 *locator_prefix,
+		uint32_t metric, uint8_t flags, uint8_t algorithm);
 struct isis_ext_subtlvs *isis_alloc_ext_subtlvs(void);
 void isis_tlvs_add_adj_sid(struct isis_ext_subtlvs *exts,
 			   struct isis_adj_sid *adj);

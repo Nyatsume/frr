@@ -139,23 +139,23 @@ int srv6_adj_ip_enabled(struct isis_adjacency *adj, int family)
 
 	return 0;
 }
-#if 0
+
 int srv6_adj_ip_disabled(struct isis_adjacency *adj, int family)
 {
-	struct   *sra;
-	struct listnode *node, *nnode;
-/* TODO
-	if (!adj->circuit->area->srdb.enabled)
-		return 0;
-*/
-	for (ALL_LIST_ELEMENTS(adj->ipv6_addresses, node, nnode, sra))
-	zclient_send_localsid(zclient,
-		adj,
-		2, ZEBRA_SEG6_LOCAL_ACTION_UNSPEC, NULL);
-
+/* 	struct   *sra; */
+/* 	struct listnode *node, *nnode; */
+/* #<{(| TODO */
+/* 	if (!adj->circuit->area->srdb.enabled) */
+/* 		return 0; */
+/* |)}># */
+/* 	for (ALL_LIST_ELEMENTS(adj->ipv6_addresses, node, nnode, sra)) */
+/* 	zclient_send_localsid(zclient, */
+/* 		adj, */
+/* 		2, ZEBRA_SEG6_LOCAL_ACTION_UNSPEC, NULL); */
+/*  */
 	return 0;
 }
-#endif
+
 /* Router-id update message from zebra. */
 static int isis_router_id_update_zebra(ZAPI_CALLBACK_ARGS)
 {

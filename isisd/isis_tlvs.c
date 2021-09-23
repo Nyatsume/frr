@@ -102,6 +102,7 @@ static const struct pack_order_entry pack_order[] = {
 	PACK_ENTRY(EXTENDED_IP_REACH, ISIS_ITEMS, extended_ip_reach),
 	PACK_ENTRY(MT_IP_REACH, ISIS_MT_ITEMS, mt_ip_reach),
 	PACK_ENTRY(IPV6_REACH, ISIS_ITEMS, ipv6_reach),
+	PACK_ENTRY(SRV6_LOCATOR_INFO, ISIS_ITEMS, srv6_locator_info),
 	PACK_ENTRY(MT_IPV6_REACH, ISIS_MT_ITEMS, mt_ipv6_reach)
 };
 
@@ -1391,10 +1392,226 @@ static int unpack_item_lsp_entry(uint16_t mtid, uint8_t len, struct stream *s,
 	return 0;
 }
 
+static void dump_srv6_locator_info(struct isis_srv6_locator_info *l)
+{
+	char b[256];
+
+	marker_debug_msg("========");
+	marker_debug_fmsg("metric: %04x", l->metric);
+	marker_debug_fmsg("flags: %01x", l->flags);
+	marker_debug_fmsg("algorithm: %01x", l->algorithm);
+	marker_debug_fmsg("loc_size: %u", l->loc_size);
+	marker_debug_fmsg("locator: %s", inet_ntop(AF_INET6, &l->locator, b, sizeof(b)));
+	marker_debug_msg("========");
+	return ;
+}
+
+static void dump_srv6_segment_end(struct isis_srv6_sid_end *s)
+{
+	char b[256];
+
+	marker_debug_msg("=======");
+	marker_debug_fmsg("type:              %u", s->type);
+	marker_debug_fmsg("length:            %u", s->length);
+	marker_debug_fmsg("flags:             0x%02x", s->flags);
+	marker_debug_fmsg("endpoint_behavior: 0x%04x", s->endpoint_behavior);
+	marker_debug_fmsg("sids[0]:           %s",
+			  inet_ntop(AF_INET6, &s->sids[0], b, sizeof(b)));
+	marker_debug_msg("=======");
+	return;
+}
+
+static void dump_srv6_segment_end_x(struct isis_srv6_sid_end_x *s)
+{
+	char b[256];
+
+	marker_debug_msg("=======");
+	marker_debug_fmsg("type:              %u", s->type);
+	marker_debug_fmsg("length:            %u", s->length);
+	marker_debug_fmsg("flags:             0x%02x", s->flags);
+	marker_debug_fmsg("algorithm:         0x%02x", s->algorithm);
+	marker_debug_fmsg("weight:            0x%02x", s->weight);
+	marker_debug_fmsg("endpoint_behavior: 0x%04x", s->endpoint_behavior);
+	marker_debug_fmsg("sids[0]:           %s",
+			  inet_ntop(AF_INET6, &s->sids[0], b, sizeof(b)));
+	marker_debug_msg("=======");
+	return;
+}
+
+static void format_item_srv6_locator_info(uint16_t mtid, struct isis_item *i,
+			      struct sbuf *buf, int indent)
+{
+	marker_debug_msg("call");
+	struct isis_srv6_locator_info *r = (struct isis_srv6_locator_info *)i;
+
+	char b[128];
+	struct prefix_ipv6 l;
+	l.family = AF_INET6;
+	l.prefixlen = r->loc_size;
+	l.prefix = r->locator;
+	prefix2str(&l, b, sizeof(b));
+
+	sbuf_push(buf, indent, "SRv6 Locator: %s (Metric: %u)", b,
+		  r->metric);
+	sbuf_push(buf, 0, "\n");
+}
+
+static void free_item_srv6_locator_info(struct isis_item *i)
+{
+	marker_debug_msg("call");
+	struct isis_srv6_locator_info *item =
+		(struct isis_srv6_locator_info *)i;
+	isis_free_subtlvs(item->subtlvs);
+	XFREE(MTYPE_ISIS_TLV, item);
+}
+
+static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
+				       size_t *min_len)
+{
+	marker_debug_msg("call");
+
+	struct isis_srv6_locator_info l = {0};
+	l.metric = 0x11223344;
+	l.flags = 0xee;
+	l.algorithm = 0xaa;
+	l.loc_size = 64;
+	for (int i = 0; i < 16; i++)
+		l.locator.s6_addr[i] = 0x11;
+
+	// TODO(slankdev)
+	stream_putw(s, 0);
+	stream_putl(s, l.metric);
+	stream_putc(s, l.flags);
+	stream_putc(s, l.algorithm);
+	stream_putc(s, l.loc_size);
+	uint8_t spl = (l.loc_size + 7) / 8;
+	stream_put(s, &l.locator, spl);
+
+	uint8_t sub_tlv_len = 22 + 24;
+	stream_putc(s, sub_tlv_len);
+
+	// SRv6 Node Segment
+	struct isis_srv6_sid_end node_segment;
+	node_segment.type = 4;
+	node_segment.length = 20; // ???
+	node_segment.flags = 0x00;
+	node_segment.endpoint_behavior = SRV6_END_BEHAVIOR_END;
+	for (int i = 0; i < 16; i++)
+		node_segment.sids[0].s6_addr[i] = 0x11;
+	stream_putc(s, node_segment.type);
+	stream_putc(s, node_segment.length);
+	stream_putc(s, node_segment.flags);
+	stream_putw(s, node_segment.endpoint_behavior);
+	stream_put(s, &node_segment.sids[0], 16);
+	stream_putc(s, 0);
+
+	// SRv6 Adj Segment
+	struct isis_srv6_sid_end_x adj_segments[SRV6_MAX_SIDS];
+	adj_segments[0].type = 43;
+	adj_segments[0].length = 22;
+	adj_segments[0].flags = 0x00;
+	adj_segments[0].algorithm = 22;
+	adj_segments[0].weight = 22;
+	adj_segments[0].endpoint_behavior = SRV6_END_BEHAVIOR_END_X;
+	for (int i = 0; i < 16; i++)
+		adj_segments[0].sids[0].s6_addr[i] = 0x33;
+	stream_putc(s, adj_segments[0].type);
+	stream_putc(s, adj_segments[0].length);
+	stream_putc(s, adj_segments[0].flags);
+	stream_putc(s, adj_segments[0].algorithm);
+	stream_putc(s, adj_segments[0].weight);
+	stream_putw(s, adj_segments[0].endpoint_behavior);
+	stream_put(s, &adj_segments[0].sids[0], 16);
+	stream_putc(s, 0);
+
+	// Finalize
+	dump_srv6_locator_info(&l);
+	dump_srv6_segment_end(&node_segment);
+	dump_srv6_segment_end_x(&adj_segments[0]);
+	return 0;
+}
+
+static int unpack_item_srv6_locator_info(uint16_t mtid, uint8_t len,
+					 struct stream *s, struct sbuf *log,
+					 void *dest, int indent)
+{
+	marker_debug_msg("call");
+
+	struct isis_tlvs *tlvs = dest;
+
+	struct isis_srv6_locator_info *rv = NULL;
+	rv = XCALLOC(MTYPE_ISIS_TLV, sizeof(*rv));
+
+	// TODO(slankdev)
+	uint16_t dummy_mt_bit = stream_getw(s);
+	(void)dummy_mt_bit;
+
+	rv->metric = stream_getl(s);
+	rv->flags = stream_getc(s);
+	rv->algorithm = stream_getc(s);
+	rv->loc_size = stream_getc(s);
+
+	uint8_t spl = (rv->loc_size + 7) / 8;
+	stream_get(&rv->locator, s, spl);
+
+	uint8_t dummy = stream_getc(s);
+	(void)dummy;
+
+	// SRv6 Node Segment
+	struct isis_srv6_sid_end node_segment;
+	node_segment.type = stream_getc(s);
+	node_segment.length = stream_getc(s);
+	node_segment.flags = stream_getc(s);
+	node_segment.endpoint_behavior = stream_getw(s);
+	stream_get(&node_segment.sids[0], s, 16);
+	dummy = stream_getc(s);
+	(void)dummy;
+
+	// SRv6 Adj Segment
+	struct isis_srv6_sid_end_x adj_segments[SRV6_MAX_SIDS];
+	adj_segments[0].type = stream_getc(s);
+	adj_segments[0].length = stream_getc(s);
+	adj_segments[0].flags = stream_getc(s);
+	adj_segments[0].algorithm = stream_getc(s);
+	adj_segments[0].weight = stream_getc(s);
+	adj_segments[0].endpoint_behavior = stream_getw(s);
+	stream_get(&adj_segments[0].sids[0], s, 16);
+	dummy = stream_getc(s);
+	(void)dummy;
+
+	// finalization
+	dump_srv6_locator_info(rv);
+	dump_srv6_segment_end(&node_segment);
+	dump_srv6_segment_end_x(&adj_segments[0]);
+	format_item_srv6_locator_info(mtid, (struct isis_item *)rv, log,
+				      indent + 2);
+	append_item(&tlvs->srv6_locator_info, (struct isis_item *)rv);;
+	return 0;
+}
+
+static struct isis_item *copy_item_srv6_locator_info(struct isis_item *i)
+{
+	marker_debug_msg("call");
+
+	struct isis_srv6_locator_info *r = (struct isis_srv6_locator_info *)i;
+	struct isis_srv6_locator_info *rv = XCALLOC(MTYPE_ISIS_TLV, sizeof(*rv));
+
+	rv->metric = r->metric;
+	rv->flags = r->flags;
+	rv->algorithm = r->algorithm;
+	rv->loc_size = r->loc_size;
+	memcpy(&rv->locator, &r->locator, sizeof(r->locator));
+
+	rv->subtlvs = copy_subtlvs(r->subtlvs);
+
+	return (struct isis_item *)rv;
+}
+
 /* Functions related to TLVs 22/222 Extended Reach/MT Reach */
 
 static struct isis_item *copy_item_extended_reach(struct isis_item *i)
 {
+	marker_debug_msg("call");
 	struct isis_extended_reach *r = (struct isis_extended_reach *)i;
 	struct isis_extended_reach *rv = XCALLOC(MTYPE_ISIS_TLV, sizeof(*rv));
 
@@ -1410,6 +1627,7 @@ static struct isis_item *copy_item_extended_reach(struct isis_item *i)
 static void format_item_extended_reach(uint16_t mtid, struct isis_item *i,
 				       struct sbuf *buf, int indent)
 {
+	marker_debug_msg("call");
 	struct isis_extended_reach *r = (struct isis_extended_reach *)i;
 
 	sbuf_push(buf, indent, "%s Reachability: %s (Metric: %u)",
@@ -1425,6 +1643,7 @@ static void format_item_extended_reach(uint16_t mtid, struct isis_item *i,
 
 static void free_item_extended_reach(struct isis_item *i)
 {
+	marker_debug_msg("call");
 	struct isis_extended_reach *item = (struct isis_extended_reach *)i;
 	if (item->subtlvs != NULL)
 		free_item_ext_subtlvs(item->subtlvs);
@@ -1434,6 +1653,7 @@ static void free_item_extended_reach(struct isis_item *i)
 static int pack_item_extended_reach(struct isis_item *i, struct stream *s,
 				    size_t *min_len)
 {
+	marker_debug_msg("call");
 	struct isis_extended_reach *r = (struct isis_extended_reach *)i;
 	size_t len;
 	size_t len_pos;
@@ -1460,6 +1680,7 @@ static int unpack_item_extended_reach(uint16_t mtid, uint8_t len,
 				      struct stream *s, struct sbuf *log,
 				      void *dest, int indent)
 {
+	marker_debug_msg("call");
 	struct isis_tlvs *tlvs = dest;
 	struct isis_extended_reach *rv = NULL;
 	uint8_t subtlv_len;
@@ -3574,6 +3795,7 @@ struct isis_tlvs *isis_alloc_tlvs(void)
 	RB_INIT(isis_mt_item_list, &result->mt_ip_reach);
 	init_item_list(&result->ipv6_reach);
 	RB_INIT(isis_mt_item_list, &result->mt_ipv6_reach);
+	init_item_list(&result->srv6_locator_info);
 
 	return result;
 }
@@ -3633,6 +3855,9 @@ struct isis_tlvs *isis_copy_tlvs(struct isis_tlvs *tlvs)
 
 	copy_mt_items(ISIS_CONTEXT_LSP, ISIS_TLV_MT_IP_REACH,
 		      &tlvs->mt_ip_reach, &rv->mt_ip_reach);
+
+	copy_items(ISIS_CONTEXT_LSP, ISIS_TLV_SRV6_LOCATOR_INFO, &tlvs->srv6_locator_info,
+		   &rv->srv6_locator_info);
 
 	rv->hostname = copy_tlv_dynamic_hostname(tlvs->hostname);
 
@@ -3716,6 +3941,9 @@ static void format_tlvs(struct isis_tlvs *tlvs, struct sbuf *buf, int indent)
 	format_tlv_threeway_adj(tlvs->threeway_adj, buf, indent);
 
 	format_tlv_spine_leaf(tlvs->spine_leaf, buf, indent);
+
+	format_items(ISIS_CONTEXT_LSP, ISIS_TLV_SRV6_LOCATOR_INFO,
+		     &tlvs->srv6_locator_info, buf, indent);
 }
 
 const char *isis_format_tlvs(struct isis_tlvs *tlvs)
@@ -3770,6 +3998,9 @@ void isis_free_tlvs(struct isis_tlvs *tlvs)
 	free_tlv_threeway_adj(tlvs->threeway_adj);
 	free_tlv_router_cap(tlvs->router_cap);
 	free_tlv_spine_leaf(tlvs->spine_leaf);
+
+	free_items(ISIS_CONTEXT_LSP, ISIS_TLV_SRV6_LOCATOR_INFO,
+		   &tlvs->srv6_locator_info);
 
 	XFREE(MTYPE_ISIS_TLV, tlvs);
 }
@@ -4191,6 +4422,8 @@ TLV_OPS(threeway_adj, "TLV 240 P2P Three-Way Adjacency");
 ITEM_TLV_OPS(ipv6_address, "TLV 232 IPv6 Interface Address");
 ITEM_TLV_OPS(ipv6_reach, "TLV 236 IPv6 Reachability");
 TLV_OPS(router_cap, "TLV 242 Router Capability");
+ITEM_TLV_OPS(srv6_locator_info, "TLV 255 SRv6 Locator");
+
 
 ITEM_SUBTLV_OPS(prefix_sid, "Sub-TLV 3 SR Prefix-SID");
 SUBTLV_OPS(ipv6_source_prefix, "Sub-TLV 22 IPv6 Source Prefix");
@@ -4220,6 +4453,7 @@ static const struct tlv_ops *const tlv_table[ISIS_CONTEXT_MAX][ISIS_TLV_MAX] = {
 		[ISIS_TLV_MT_IPV6_REACH] = &tlv_ipv6_reach_ops,
 		[ISIS_TLV_THREE_WAY_ADJ] = &tlv_threeway_adj_ops,
 		[ISIS_TLV_ROUTER_CAPABILITY] = &tlv_router_cap_ops,
+		[ISIS_TLV_SRV6_LOCATOR_INFO] = &tlv_srv6_locator_info_ops,
 	},
 	[ISIS_CONTEXT_SUBTLV_NE_REACH] = {},
 	[ISIS_CONTEXT_SUBTLV_IP_REACH] = {
@@ -4812,6 +5046,23 @@ void isis_tlvs_add_ipv6_reach(struct isis_tlvs *tlvs, uint16_t mtid,
 	l = (mtid == ISIS_MT_IPV4_UNICAST)
 		    ? &tlvs->ipv6_reach
 		    : isis_get_mt_items(&tlvs->mt_ipv6_reach, mtid);
+	append_item(l, (struct isis_item *)r);
+}
+
+void isis_tlvs_add_srv6_locator_info(struct isis_tlvs *tlvs,
+		struct prefix_ipv6 *locator_prefix,
+		uint32_t metric, uint8_t flags, uint8_t algorithm)
+{
+	marker_debug_msg("call");
+	struct isis_srv6_locator_info *r = XCALLOC(MTYPE_ISIS_TLV, sizeof(*r));
+	r->metric = metric;
+	r->flags = flags;
+	r->algorithm = algorithm;
+	r->loc_size = locator_prefix->prefixlen;
+	r->locator = locator_prefix->prefix;
+
+	struct isis_item_list *l;
+        l = &tlvs->srv6_locator_info;
 	append_item(l, (struct isis_item *)r);
 }
 
