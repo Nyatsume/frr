@@ -116,6 +116,38 @@ static const struct tlv_ops *const tlv_table[ISIS_CONTEXT_MAX][ISIS_TLV_MAX];
 static void append_item(struct isis_item_list *dest, struct isis_item *item);
 static void init_item_list(struct isis_item_list *items);
 
+static void dump_srv6_segment_end(struct isis_srv6_sid_end *s)
+{
+	char b[256];
+
+	marker_debug_msg("=======");
+	marker_debug_fmsg("type:              %u", s->type);
+	marker_debug_fmsg("length:            %u", s->length);
+	marker_debug_fmsg("flags:             0x%02x", s->flags);
+	marker_debug_fmsg("endpoint_behavior: 0x%04x", s->endpoint_behavior);
+	marker_debug_fmsg("sids[0]:           %s",
+			  inet_ntop(AF_INET6, &s->sids[0], b, sizeof(b)));
+	marker_debug_msg("=======");
+	return;
+}
+
+static void dump_srv6_segment_end_x(struct isis_srv6_sid_end_x *s)
+{
+	char b[256];
+
+	marker_debug_msg("=======");
+	marker_debug_fmsg("type:              %u", s->type);
+	marker_debug_fmsg("length:            %u", s->length);
+	marker_debug_fmsg("flags:             0x%02x", s->flags);
+	marker_debug_fmsg("algorithm:         0x%02x", s->algorithm);
+	marker_debug_fmsg("weight:            0x%02x", s->weight);
+	marker_debug_fmsg("endpoint_behavior: 0x%04x", s->endpoint_behavior);
+	marker_debug_fmsg("sids[0]:           %s",
+			  inet_ntop(AF_INET6, &s->sids[0], b, sizeof(b)));
+	marker_debug_msg("=======");
+	return;
+}
+
 /* Functions for Extended IS Reachability SubTLVs a.k.a Traffic Engineering */
 struct isis_ext_subtlvs *isis_alloc_ext_subtlvs(void)
 {
@@ -124,6 +156,7 @@ struct isis_ext_subtlvs *isis_alloc_ext_subtlvs(void)
 	ext = XCALLOC(MTYPE_ISIS_SUBTLV, sizeof(struct isis_ext_subtlvs));
 	init_item_list(&ext->adj_sid);
 	init_item_list(&ext->lan_sid);
+	init_item_list(&ext->srv6_adj_sid);
 
 	return ext;
 }
@@ -514,6 +547,34 @@ static int pack_item_ext_subtlvs(struct isis_ext_subtlvs *exts,
 				stream_put3(s, lan->sid);
 			else
 				stream_putl(s, lan->sid);
+		}
+	}
+
+	if (IS_SUBTLV(exts, EXT_SRV6_ADJ_SID)) {
+		struct isis_srv6_adj_sid *adj;
+
+		for (adj = (struct isis_srv6_adj_sid *)exts->srv6_adj_sid.head;
+			 adj; adj = adj->next) {
+
+			struct isis_srv6_sid_end_x adj_segment;
+			adj_segment.type = 43;
+			adj_segment.length = 22;
+			adj_segment.flags = 0x00;
+			adj_segment.algorithm = 22;
+			adj_segment.weight = 22;
+			adj_segment.endpoint_behavior = SRV6_END_BEHAVIOR_END_X;
+			adj_segment.sids[0] = adj->sid;
+
+			stream_putc(s, adj_segment.type);
+			stream_putc(s, adj_segment.length);
+			stream_putc(s, adj_segment.flags);
+			stream_putc(s, adj_segment.algorithm);
+			stream_putc(s, adj_segment.weight);
+			stream_putw(s, adj_segment.endpoint_behavior);
+			stream_put(s, &adj_segment.sids[0], 16);
+			stream_putc(s, 0);
+
+			dump_srv6_segment_end_x(&adj_segment);
 		}
 	}
 
@@ -1406,38 +1467,6 @@ static void dump_srv6_locator_info(struct isis_srv6_locator_info *l)
 	return ;
 }
 
-static void dump_srv6_segment_end(struct isis_srv6_sid_end *s)
-{
-	char b[256];
-
-	marker_debug_msg("=======");
-	marker_debug_fmsg("type:              %u", s->type);
-	marker_debug_fmsg("length:            %u", s->length);
-	marker_debug_fmsg("flags:             0x%02x", s->flags);
-	marker_debug_fmsg("endpoint_behavior: 0x%04x", s->endpoint_behavior);
-	marker_debug_fmsg("sids[0]:           %s",
-			  inet_ntop(AF_INET6, &s->sids[0], b, sizeof(b)));
-	marker_debug_msg("=======");
-	return;
-}
-
-static void dump_srv6_segment_end_x(struct isis_srv6_sid_end_x *s)
-{
-	char b[256];
-
-	marker_debug_msg("=======");
-	marker_debug_fmsg("type:              %u", s->type);
-	marker_debug_fmsg("length:            %u", s->length);
-	marker_debug_fmsg("flags:             0x%02x", s->flags);
-	marker_debug_fmsg("algorithm:         0x%02x", s->algorithm);
-	marker_debug_fmsg("weight:            0x%02x", s->weight);
-	marker_debug_fmsg("endpoint_behavior: 0x%04x", s->endpoint_behavior);
-	marker_debug_fmsg("sids[0]:           %s",
-			  inet_ntop(AF_INET6, &s->sids[0], b, sizeof(b)));
-	marker_debug_msg("=======");
-	return;
-}
-
 static void format_item_srv6_locator_info(uint16_t mtid, struct isis_item *i,
 			      struct sbuf *buf, int indent)
 {
@@ -1487,14 +1516,13 @@ static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 	uint8_t spl = (l.loc_size + 7) / 8;
 	stream_put(s, &l.locator, spl);
 
-	uint8_t sub_tlv_len = 22 + 24;
+	uint8_t sub_tlv_len = 22; //TODO(slankdev): magic number
 	stream_putc(s, sub_tlv_len);
 
 	// SRv6 Node Segment
 	struct isis_srv6_sid_end node_segment;
-	node_segment.type = 4;
-	node_segment.length = 20; // ???
-	node_segment.flags = 0x00;
+	node_segment.type = 5;
+	node_segment.length = 20;
 	node_segment.endpoint_behavior = SRV6_END_BEHAVIOR_END;
 	for (int i = 0; i < 16; i++)
 		node_segment.sids[0].s6_addr[i] = 0x11;
@@ -1505,29 +1533,8 @@ static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 	stream_put(s, &node_segment.sids[0], 16);
 	stream_putc(s, 0);
 
-	// SRv6 Adj Segment
-	struct isis_srv6_sid_end_x adj_segments[SRV6_MAX_SIDS];
-	adj_segments[0].type = 43;
-	adj_segments[0].length = 22;
-	adj_segments[0].flags = 0x00;
-	adj_segments[0].algorithm = 22;
-	adj_segments[0].weight = 22;
-	adj_segments[0].endpoint_behavior = SRV6_END_BEHAVIOR_END_X;
-	for (int i = 0; i < 16; i++)
-		adj_segments[0].sids[0].s6_addr[i] = 0x33;
-	stream_putc(s, adj_segments[0].type);
-	stream_putc(s, adj_segments[0].length);
-	stream_putc(s, adj_segments[0].flags);
-	stream_putc(s, adj_segments[0].algorithm);
-	stream_putc(s, adj_segments[0].weight);
-	stream_putw(s, adj_segments[0].endpoint_behavior);
-	stream_put(s, &adj_segments[0].sids[0], 16);
-	stream_putc(s, 0);
-
 	// Finalize
 	dump_srv6_locator_info(&l);
-	dump_srv6_segment_end(&node_segment);
-	dump_srv6_segment_end_x(&adj_segments[0]);
 	return 0;
 }
 
@@ -1567,22 +1574,9 @@ static int unpack_item_srv6_locator_info(uint16_t mtid, uint8_t len,
 	dummy = stream_getc(s);
 	(void)dummy;
 
-	// SRv6 Adj Segment
-	struct isis_srv6_sid_end_x adj_segments[SRV6_MAX_SIDS];
-	adj_segments[0].type = stream_getc(s);
-	adj_segments[0].length = stream_getc(s);
-	adj_segments[0].flags = stream_getc(s);
-	adj_segments[0].algorithm = stream_getc(s);
-	adj_segments[0].weight = stream_getc(s);
-	adj_segments[0].endpoint_behavior = stream_getw(s);
-	stream_get(&adj_segments[0].sids[0], s, 16);
-	dummy = stream_getc(s);
-	(void)dummy;
-
 	// finalization
 	dump_srv6_locator_info(rv);
 	dump_srv6_segment_end(&node_segment);
-	dump_srv6_segment_end_x(&adj_segments[0]);
 	format_item_srv6_locator_info(mtid, (struct isis_item *)rv, log,
 				      indent + 2);
 	append_item(&tlvs->srv6_locator_info, (struct isis_item *)rv);;
@@ -4968,6 +4962,24 @@ void isis_tlvs_add_oldstyle_ip_reach(struct isis_tlvs *tlvs,
 	append_item(&tlvs->oldstyle_ip_reach, (struct isis_item *)r);
 }
 
+/* Add IS-IS SRv6 Adjacency-SID subTLVs */
+void isis_tlvs_add_srv6_adj_sid(struct isis_ext_subtlvs *exts,
+			   struct isis_srv6_adj_sid *adj)
+{
+	append_item(&exts->srv6_adj_sid, (struct isis_item *)adj);
+	SET_SUBTLV(exts, EXT_SRV6_ADJ_SID);
+}
+
+/* Delete IS-IS SRv6 Adjacency-SID subTLVs */
+void isis_tlvs_del_srv6_adj_sid(struct isis_ext_subtlvs *exts,
+			   struct isis_srv6_adj_sid *adj)
+{
+	delete_item(&exts->srv6_adj_sid, (struct isis_item *)adj);
+	XFREE(MTYPE_ISIS_SUBTLV, adj);
+	if (exts->srv6_adj_sid.count == 0)
+		UNSET_SUBTLV(exts, EXT_SRV6_ADJ_SID);
+}
+
 /* Add IS-IS SR Adjacency-SID subTLVs */
 void isis_tlvs_add_adj_sid(struct isis_ext_subtlvs *exts,
 			   struct isis_adj_sid *adj)
@@ -5053,7 +5065,6 @@ void isis_tlvs_add_srv6_locator_info(struct isis_tlvs *tlvs,
 		struct prefix_ipv6 *locator_prefix,
 		uint32_t metric, uint8_t flags, uint8_t algorithm)
 {
-	marker_debug_msg("call");
 	struct isis_srv6_locator_info *r = XCALLOC(MTYPE_ISIS_TLV, sizeof(*r));
 	r->metric = metric;
 	r->flags = flags;

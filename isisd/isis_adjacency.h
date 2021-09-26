@@ -107,8 +107,11 @@ struct isis_adjacency {
 	unsigned int mt_count; /* Number of entries in mt_set */
 	struct bfd_session_params *bfd_session;
 	struct list *adj_sids; /* Segment Routing Adj-SIDs. */
+	struct list *srv6_adj_sids; /* Segment Routing IPv6 Adj-SIDs */
 	uint32_t snmp_idx;
 	struct listnode *snmp_list_node;
+
+	struct in6_addr srv6_adj_sid;
 };
 
 struct isis_threeway_adj;

@@ -105,6 +105,8 @@ struct isis {
 	char srv6_locator_name[256];
 	struct list *srv6_locator_chunks;
 	struct list *srv6_functions;
+
+	//struct srv6_node_segment srv6_node_segment;
 };
 
 extern struct isis_master *im;

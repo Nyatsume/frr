@@ -614,6 +614,16 @@ void isis_adj_print_vty(struct isis_adjacency *adj, struct vty *vty,
 								 : "IPv6",
 				adj_type, backup, sid);
 		}
+
+		// TODO(slankdev): replace srv6_adj_sid with srv6_adj_sids
+		// for (ALL_LIST_ELEMENTS_RO(adj->srv6_adj_sids, anode, sra)) {
+		// }
+		if (!sid_zero(&adj->srv6_adj_sid)) {
+			char b[256];
+			inet_ntop(AF_INET6, &adj->srv6_adj_sid, b, sizeof(b));
+			vty_out(vty, "    SRv6 Adjacency-SID: %s \n", b);
+		}
+
 		vty_out(vty, "\n");
 	}
 	return;
