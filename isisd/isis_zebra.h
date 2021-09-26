@@ -26,6 +26,8 @@
 
 extern struct zclient *zclient;
 
+bool alloc_new_sid(uint32_t index, struct in6_addr *sid);
+
 extern int isis_zebra_srv6_manager_get_locator_chunk(const char *name);
 extern int srv6_adj_ip_enabled(struct isis_adjacency *adj, int family);
 extern int srv6_adj_ip_disabled(struct isis_adjacency *adj, int family);
@@ -40,7 +42,7 @@ struct isis_srv6_adj_segment {
 
 extern struct isis_srv6_node_segment node_segment;
 extern struct isis_srv6_adj_segment adj_segment[SRV6_MAX_SIDS];
-extern void adj_segment_set(struct in6_addr *adj_addr);
+extern void adj_segment_set(struct isis_adjacency *adj);
 
 struct label_chunk {
 	uint32_t start;

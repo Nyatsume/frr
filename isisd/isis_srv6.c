@@ -21,19 +21,3 @@
  * with this program; see the file COPYING; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
-
-#ifndef _FRR_ISIS_SRV6_H
-#define _FRR_ISIS_SRV6_H
-
-#include "lib/linklist.h"
-#include "lib/mpls.h"
-#include "lib/nexthop.h"
-#include "lib/typesafe.h"
-
-/* Segment Routing Adjacency. */
-struct srv6_adjacency {
-	struct in6_addr sid;
-	struct in6_addr adj_addr;
-};
-
-#endif /* _FRR_ISIS_SRV6_H */

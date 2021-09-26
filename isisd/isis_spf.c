@@ -1558,10 +1558,6 @@ static void spf_path_process(struct isis_spftree *spftree,
 				//marker_debug_msg("call");
 				sr_adj_sid_add_single(adj, spftree->family,
 						true, vertex->Adj_N);
-				if (adj && adj->ipv6_addresses) {
-					//marker_debug_msg("call");
-					adj_segment_set(adj->ipv6_addresses);
-				}
 			}
 		} else if (IS_DEBUG_SPF_EVENTS)
 			zlog_debug(

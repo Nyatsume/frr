@@ -194,6 +194,12 @@ struct isis_prefix_sid {
 #define EXT_SUBTLV_LINK_ADJ_SID_SFLG	0x08
 #define EXT_SUBTLV_LINK_ADJ_SID_PFLG	0x04
 
+struct isis_srv6_adj_sid;
+struct isis_srv6_adj_sid {
+	struct isis_srv6_adj_sid *next;
+	struct in6_addr sid;
+};
+
 struct isis_adj_sid;
 struct isis_adj_sid {
 	struct isis_adj_sid *next;
@@ -532,6 +538,7 @@ enum ext_subtlv_size {
 #define EXT_RES_BW		0x040000
 #define EXT_AVA_BW		0x080000
 #define EXT_USE_BW		0x100000
+#define EXT_SRV6_ADJ_SID	0x200000
 
 /*
  * This structure groups all Extended IS Reachability subTLVs.
@@ -578,6 +585,9 @@ struct isis_ext_subtlvs {
 	/* Segment Routing Adjacency & LAN Adjacency Segment ID */
 	struct isis_item_list adj_sid;
 	struct isis_item_list lan_sid;
+
+	/* Segment Routing IPv6 */
+	struct isis_item_list srv6_adj_sid;
 };
 
 #define IS_COMPAT_MT_TLV(tlv_type)                                             \
@@ -657,6 +667,10 @@ void isis_tlvs_add_srv6_locator_info(struct isis_tlvs *tlvs,
 		struct prefix_ipv6 *locator_prefix,
 		uint32_t metric, uint8_t flags, uint8_t algorithm);
 struct isis_ext_subtlvs *isis_alloc_ext_subtlvs(void);
+void isis_tlvs_add_srv6_adj_sid(struct isis_ext_subtlvs *exts,
+			   struct isis_srv6_adj_sid *adj);
+void isis_tlvs_del_srv6_adj_sid(struct isis_ext_subtlvs *exts,
+			   struct isis_srv6_adj_sid *adj);
 void isis_tlvs_add_adj_sid(struct isis_ext_subtlvs *exts,
 			   struct isis_adj_sid *adj);
 void isis_tlvs_del_adj_sid(struct isis_ext_subtlvs *exts,
