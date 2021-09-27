@@ -46,6 +46,7 @@
 
 DEFINE_MTYPE_STATIC(ISISD, ISIS_TLV, "ISIS TLVs");
 DEFINE_MTYPE(ISISD, ISIS_SUBTLV, "ISIS Sub-TLVs");
+DEFINE_MTYPE(ISISD, ISIS_SUBSUBTLV, "ISIS Sub-Sub-TLVs");
 DEFINE_MTYPE_STATIC(ISISD, ISIS_MT_ITEM_LIST, "ISIS MT Item Lists");
 
 typedef int (*unpack_tlv_func)(enum isis_tlv_context context, uint8_t tlv_type,
@@ -1516,7 +1517,7 @@ static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 	uint8_t spl = (l.loc_size + 7) / 8;
 	stream_put(s, &l.locator, spl);
 
-	uint8_t sub_tlv_len = 22; //TODO(slankdev): magic number
+	uint8_t sub_tlv_len = 22 + 6; //TODO(slankdev): magic number
 	stream_putc(s, sub_tlv_len);
 
 	// SRv6 Node Segment
@@ -1531,7 +1532,24 @@ static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 	stream_putc(s, node_segment.flags);
 	stream_putw(s, node_segment.endpoint_behavior);
 	stream_put(s, &node_segment.sids[0], 16);
-	stream_putc(s, 0);
+	stream_putc(s, 6);
+
+	struct isis_srv6_sid_structure sid_str;
+	sid_str.type = 1;
+	sid_str.length = 4;
+	// TODO(nyatsume)
+	sid_str.lb_length = 48;
+	sid_str.ln_length = 16;
+	sid_str.fun_length = 64;
+	sid_str.arg_length = 0;
+
+	stream_putc(s, sid_str.type);
+	stream_putc(s, sid_str.length);
+	stream_putc(s, sid_str.lb_length);
+	stream_putc(s, sid_str.ln_length);
+	stream_putc(s, sid_str.fun_length);
+	stream_putc(s, sid_str.arg_length);
+
 
 	// Finalize
 	dump_srv6_locator_info(&l);
@@ -1574,6 +1592,16 @@ static int unpack_item_srv6_locator_info(uint16_t mtid, uint8_t len,
 	dummy = stream_getc(s);
 	(void)dummy;
 
+	//Srv6 SID Structure
+	struct isis_srv6_sid_structure sid_str;
+	sid_str.type = stream_getc(s);
+	sid_str.length = stream_getc(s);
+	sid_str.lb_length = stream_getc(s);
+	sid_str.ln_length = stream_getc(s);
+	sid_str.fun_length = stream_getc(s);
+	sid_str.arg_length = stream_getc(s);
+	dummy = stream_getc(s);
+	(void)dummy;
 	// finalization
 	dump_srv6_locator_info(rv);
 	dump_srv6_segment_end(&node_segment);

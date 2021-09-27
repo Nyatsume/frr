@@ -247,6 +247,16 @@ struct isis_srv6_sid_end_x {
 	struct in6_addr sids[SRV6_MAX_SIDS];
 };
 
+struct isis_srv6_sid_structure {
+	uint8_t type;
+	uint8_t length;
+	uint8_t lb_length;
+	uint8_t ln_length;
+	uint8_t fun_length;
+	uint8_t arg_length;
+};
+
+
 /* RFC 4971 & RFC 7981 */
 #define ISIS_ROUTER_CAP_FLAG_S	0x01
 #define ISIS_ROUTER_CAP_FLAG_D	0x02
@@ -475,10 +485,12 @@ enum isis_tlv_type {
 	ISIS_SUBTLV_USE_BW = 39,
 
 	/* draft-ietf-lsr-isis-srv6-extensions */
-	ISIS_SUBTLV_SID_END = 4,
+	ISIS_SUBTLV_SID_END = 5,
 	ISIS_SUBTLV_SID_END_X = 43,
 
-	ISIS_SUBTLV_MAX = 40
+	ISIS_SUBTLV_MAX = 40,
+	ISIS_SUBSUBTLV_SID_STR = 1,
+	ISIS_SUBSUBTLV_MAX = 256
 };
 
 /* subTLVs size for TE and SR */
@@ -513,8 +525,11 @@ enum ext_subtlv_size {
 
 /* Macros to manage the optional presence of EXT subTLVs */
 #define SET_SUBTLV(s, t) ((s->status) |= (t))
+#define SET_SUBSUBTLV(s, t) ((s->status) |= (t))
 #define UNSET_SUBTLV(s, t) ((s->status) &= ~(t))
+#define UNSET_SUBSUBTLV(s, t) ((s->status) &= ~(t))
 #define IS_SUBTLV(s, t) (s->status & t)
+#define IS_SUBSUBTLV(s, t) (s->status & t)
 
 #define EXT_DISABLE		0x000000
 #define EXT_ADM_GRP		0x000001
@@ -589,6 +604,7 @@ struct isis_ext_subtlvs {
 	/* Segment Routing IPv6 */
 	struct isis_item_list srv6_adj_sid;
 };
+
 
 #define IS_COMPAT_MT_TLV(tlv_type)                                             \
 	((tlv_type == ISIS_TLV_MT_REACH) || (tlv_type == ISIS_TLV_MT_IP_REACH) \
