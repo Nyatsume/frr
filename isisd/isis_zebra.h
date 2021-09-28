@@ -40,6 +40,11 @@ struct isis_srv6_adj_segment {
 	struct in6_addr adj_addr;
 };
 
+struct isis_srv6_locator_address {
+	struct in6_addr address;
+};
+
+extern struct isis_srv6_locator_address loc_addr;
 extern struct isis_srv6_node_segment node_segment;
 extern struct isis_srv6_adj_segment adj_segment[SRV6_MAX_SIDS];
 

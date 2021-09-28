@@ -61,6 +61,7 @@ struct zclient *zclient;
 static struct zclient *zclient_sync;
 struct isis_srv6_node_segment node_segment;
 struct isis_srv6_adj_segment adj_segment[SRV6_MAX_SIDS];
+struct isis_srv6_locator_address loc_addr;
 struct list *srv6_locator_chunks;
 struct in6_addr esid[SRV6_MAX_SIDS] = {0};
 
@@ -978,6 +979,7 @@ static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 //	struct prefix_ipv6 *c;
 	struct srv6_locator_chunk s6c = {};
 	struct prefix_ipv6 *chunk = NULL;
+	int i;
 
 	if(!srv6_locator_chunks)
 		srv6_locator_chunks = list_new();
@@ -989,6 +991,8 @@ static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 	*chunk = s6c.prefix;
 	marker_debug_fmsg("%s",s6c.locator_name);
 	listnode_add(srv6_locator_chunks, chunk);
+	for (i = 0; i < 16; i++) 
+		loc_addr.address.s6_addr[i] = s6c.prefix.prefix.s6_addr[i]; 
 	dump_srv6_chunks(srv6_locator_chunks);
 	node_segment_set();
 }

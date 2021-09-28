@@ -554,6 +554,7 @@ enum ext_subtlv_size {
 #define EXT_AVA_BW		0x080000
 #define EXT_USE_BW		0x100000
 #define EXT_SRV6_ADJ_SID	0x200000
+#define EXT_SRV6_SID_STR	0x400000
 
 /*
  * This structure groups all Extended IS Reachability subTLVs.
@@ -605,6 +606,12 @@ struct isis_ext_subtlvs {
 	struct isis_item_list srv6_adj_sid;
 };
 
+/* TODO(nyatsume)
+struct isis_ext_subsubtlvs {
+	uint32_t status;
+	struct isis_srv6_sid_structure sid_str;
+};
+*/
 
 #define IS_COMPAT_MT_TLV(tlv_type)                                             \
 	((tlv_type == ISIS_TLV_MT_REACH) || (tlv_type == ISIS_TLV_MT_IP_REACH) \

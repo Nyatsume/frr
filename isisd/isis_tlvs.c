@@ -43,6 +43,7 @@
 #include "isisd/isis_lsp.h"
 #include "isisd/isis_te.h"
 #include "isisd/isis_sr.h"
+#include "isisd/isis_zebra.h"
 
 DEFINE_MTYPE_STATIC(ISISD, ISIS_TLV, "ISIS TLVs");
 DEFINE_MTYPE(ISISD, ISIS_SUBTLV, "ISIS Sub-TLVs");
@@ -161,6 +162,15 @@ struct isis_ext_subtlvs *isis_alloc_ext_subtlvs(void)
 
 	return ext;
 }
+/* TODO(nyatsume)
+struct isis_ext_subsubtlvs *isis_alloc_ext_subsubtlvs(void)
+{
+	struct isis_ext_subsubtlvs *ext;
+
+	ext = XCALLOC(MTYPE_ISIS_SUBSUBTLV, sizeof(struct isis_ext_subsubtlvs));
+
+}
+*/
 
 /*
  * mtid parameter is used to determine if Adjacency is related to IPv4 or IPv6.
@@ -1506,7 +1516,7 @@ static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 	l.algorithm = 0xaa;
 	l.loc_size = 64;
 	for (int i = 0; i < 16; i++)
-		l.locator.s6_addr[i] = 0x11;
+		l.locator.s6_addr[i] = loc_addr.address.s6_addr[i];
 
 	// TODO(slankdev)
 	stream_putw(s, 0);
@@ -1517,23 +1527,24 @@ static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 	uint8_t spl = (l.loc_size + 7) / 8;
 	stream_put(s, &l.locator, spl);
 
-	uint8_t sub_tlv_len = 22 + 6; //TODO(slankdev): magic number
+	uint8_t sub_tlv_len = 22; //TODO(slankdev): magic number
 	stream_putc(s, sub_tlv_len);
 
 	// SRv6 Node Segment
-	struct isis_srv6_sid_end node_segment;
-	node_segment.type = 5;
-	node_segment.length = 20;
-	node_segment.endpoint_behavior = SRV6_END_BEHAVIOR_END;
+	struct isis_srv6_sid_end sid_end;
+	sid_end.type = 5;
+	sid_end.length = 20;
+	sid_end.endpoint_behavior = SRV6_END_BEHAVIOR_END;
 	for (int i = 0; i < 16; i++)
-		node_segment.sids[0].s6_addr[i] = 0x11;
-	stream_putc(s, node_segment.type);
-	stream_putc(s, node_segment.length);
-	stream_putc(s, node_segment.flags);
-	stream_putw(s, node_segment.endpoint_behavior);
-	stream_put(s, &node_segment.sids[0], 16);
-	stream_putc(s, 6);
+		sid_end.sids[0].s6_addr[i] = node_segment.sid.s6_addr[i];
+	stream_putc(s, sid_end.type);
+	stream_putc(s, sid_end.length);
+	stream_putc(s, sid_end.flags);
+	stream_putw(s, sid_end.endpoint_behavior);
+	stream_put(s, &sid_end.sids[0], 16);
+	stream_putc(s, 0);
 
+#if 1
 	struct isis_srv6_sid_structure sid_str;
 	sid_str.type = 1;
 	sid_str.length = 4;
@@ -1549,7 +1560,7 @@ static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 	stream_putc(s, sid_str.ln_length);
 	stream_putc(s, sid_str.fun_length);
 	stream_putc(s, sid_str.arg_length);
-
+#endif
 
 	// Finalize
 	dump_srv6_locator_info(&l);
@@ -1583,15 +1594,16 @@ static int unpack_item_srv6_locator_info(uint16_t mtid, uint8_t len,
 	(void)dummy;
 
 	// SRv6 Node Segment
-	struct isis_srv6_sid_end node_segment;
-	node_segment.type = stream_getc(s);
-	node_segment.length = stream_getc(s);
-	node_segment.flags = stream_getc(s);
-	node_segment.endpoint_behavior = stream_getw(s);
-	stream_get(&node_segment.sids[0], s, 16);
+	struct isis_srv6_sid_end sid_end;
+	sid_end.type = stream_getc(s);
+	sid_end.length = stream_getc(s);
+	sid_end.flags = stream_getc(s);
+	sid_end.endpoint_behavior = stream_getw(s);
+	stream_get(&sid_end.sids[0], s, 16);
 	dummy = stream_getc(s);
 	(void)dummy;
 
+#if 1
 	//Srv6 SID Structure
 	struct isis_srv6_sid_structure sid_str;
 	sid_str.type = stream_getc(s);
@@ -1600,11 +1612,13 @@ static int unpack_item_srv6_locator_info(uint16_t mtid, uint8_t len,
 	sid_str.ln_length = stream_getc(s);
 	sid_str.fun_length = stream_getc(s);
 	sid_str.arg_length = stream_getc(s);
-	dummy = stream_getc(s);
-	(void)dummy;
+//	dummy = stream_getc(s);
+//	(void)dummy;
+#endif
+
 	// finalization
 	dump_srv6_locator_info(rv);
-	dump_srv6_segment_end(&node_segment);
+	dump_srv6_segment_end(&sid_end);
 	format_item_srv6_locator_info(mtid, (struct isis_item *)rv, log,
 				      indent + 2);
 	append_item(&tlvs->srv6_locator_info, (struct isis_item *)rv);;
