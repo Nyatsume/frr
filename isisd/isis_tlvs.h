@@ -120,7 +120,7 @@ struct isis_srv6_locator_info {
 	struct in6_addr locator;
 
 	//uint8_t sub_tlv_len;
-	struct isis_subtlvs *subtlvs;
+	struct isis_srv6_loc_subtlvs *subtlvs;
 };
 
 struct isis_protocols_supported {
@@ -197,6 +197,12 @@ struct isis_prefix_sid {
 struct isis_srv6_adj_sid;
 struct isis_srv6_adj_sid {
 	struct isis_srv6_adj_sid *next;
+	struct in6_addr sid;
+};
+
+struct isis_srv6_node_sid;
+struct isis_srv6_node_sid {
+	struct isis_node_sid *next;
 	struct in6_addr sid;
 };
 
@@ -554,7 +560,9 @@ enum ext_subtlv_size {
 #define EXT_AVA_BW		0x080000
 #define EXT_USE_BW		0x100000
 #define EXT_SRV6_ADJ_SID	0x200000
-#define EXT_SRV6_SID_STR	0x400000
+
+#define LOC_DISABLE		0x000000
+#define LOC_SRV6_NODE_SID	0x000001
 
 /*
  * This structure groups all Extended IS Reachability subTLVs.
@@ -604,6 +612,13 @@ struct isis_ext_subtlvs {
 
 	/* Segment Routing IPv6 */
 	struct isis_item_list srv6_adj_sid;
+};
+
+struct isis_srv6_loc_subtlvs {
+
+	uint32_t status;
+
+	struct isis_item_list srv6_node_sid;
 };
 
 /* TODO(nyatsume)
