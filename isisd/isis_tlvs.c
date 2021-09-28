@@ -150,6 +150,85 @@ static void dump_srv6_segment_end_x(struct isis_srv6_sid_end_x *s)
 	return;
 }
 
+static void isis_free_srv6_loc_subtlvs(struct isis_srv6_loc_subtlvs *subtlvs)
+{
+	// TODO(slankdev)
+	return;
+}
+
+
+static struct isis_srv6_loc_subtlvs *copy_item_srv6_loc_subtlvs(struct isis_srv6_loc_subtlvs *subtlvs)
+{
+	if (!subtlvs)
+		return NULL;
+
+	struct isis_srv6_loc_subtlvs *rv = XCALLOC(MTYPE_ISIS_SUBTLV, sizeof(*rv));
+	rv->srv6_node_sid = subtlvs->srv6_node_sid;
+	return rv;
+}
+
+
+static int pack_item_srv6_loc_subtlvs(struct isis_srv6_loc_subtlvs *locs,
+				 struct stream *s)
+{
+	//uint8_t size;
+	size_t subtlv_len_pos = stream_get_endp(s);
+
+	if (STREAM_WRITEABLE(s) < 1)
+		return 1;
+	stream_putc(s, 0); /* Put 0 as subtlvs length, filled in later */
+
+# if 0
+	if (STREAM_WRITEABLE(s) < ISIS_SUBTLV_MAX_SIZE) {
+		*min_len = ISIS_SUBTLV_MAX_SIZE;
+		return 1;
+	}
+#endif
+
+	if (IS_SUBTLV(locs, LOC_SRV6_NODE_SID)) {
+		struct isis_srv6_node_sid *node;
+
+		for (node = (struct isis_srv6_node_sid *)locs->srv6_node_sid.head; node;
+		     node = node->next) {
+			struct isis_srv6_sid_end sid_end;
+			sid_end.type = 5;
+			sid_end.length = 20;
+			sid_end.endpoint_behavior = SRV6_END_BEHAVIOR_END;
+			for (int i = 0; i < 16; i++)
+				sid_end.sids[0].s6_addr[i] = node_segment.sid.s6_addr[i];
+			stream_putc(s, sid_end.type);
+			stream_putc(s, sid_end.length);
+			stream_putc(s, sid_end.flags);
+			stream_putw(s, sid_end.endpoint_behavior);
+			stream_put(s, &sid_end.sids[0], 16);
+			stream_putc(s, 0);
+
+			struct isis_srv6_sid_structure sid_str;
+			sid_str.type = 1;
+			sid_str.length = 4;
+			// TODO(nyatsume)
+			sid_str.lb_length = 48;
+			sid_str.ln_length = 16;
+			sid_str.fun_length = 64;
+			sid_str.arg_length = 0;
+
+			stream_putc(s, sid_str.type);
+			stream_putc(s, sid_str.length);
+			stream_putc(s, sid_str.lb_length);
+			stream_putc(s, sid_str.ln_length);
+			stream_putc(s, sid_str.fun_length);
+			stream_putc(s, sid_str.arg_length);
+
+		}
+	}
+	size_t subtlv_len = stream_get_endp(s) - subtlv_len_pos - 1;
+	if (subtlv_len > 255)
+		return 1;
+
+	stream_putc_at(s, subtlv_len_pos, subtlv_len);
+	return 0;
+}
+
 /* Functions for Extended IS Reachability SubTLVs a.k.a Traffic Engineering */
 struct isis_ext_subtlvs *isis_alloc_ext_subtlvs(void)
 {
@@ -1501,7 +1580,7 @@ static void free_item_srv6_locator_info(struct isis_item *i)
 	marker_debug_msg("call");
 	struct isis_srv6_locator_info *item =
 		(struct isis_srv6_locator_info *)i;
-	isis_free_subtlvs(item->subtlvs);
+	isis_free_srv6_loc_subtlvs(item->subtlvs);
 	XFREE(MTYPE_ISIS_TLV, item);
 }
 
@@ -1510,58 +1589,32 @@ static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 {
 	marker_debug_msg("call");
 
-	struct isis_srv6_locator_info l = {0};
-	l.metric = 0x11223344;
-	l.flags = 0xee;
-	l.algorithm = 0xaa;
-	l.loc_size = 64;
+	struct isis_srv6_locator_info *r = (struct isis_srv6_locator_info *)i;
+	r->metric = 0x11223344;
+	r->flags = 0xee;
+	r->algorithm = 0xaa;
+	r->loc_size = 64;
 	for (int i = 0; i < 16; i++)
-		l.locator.s6_addr[i] = loc_addr.address.s6_addr[i];
+		r->locator.s6_addr[i] = loc_addr.address.s6_addr[i];
 
 	// TODO(slankdev)
 	stream_putw(s, 0);
-	stream_putl(s, l.metric);
-	stream_putc(s, l.flags);
-	stream_putc(s, l.algorithm);
-	stream_putc(s, l.loc_size);
-	uint8_t spl = (l.loc_size + 7) / 8;
-	stream_put(s, &l.locator, spl);
+	stream_putl(s, r->metric);
+	stream_putc(s, r->flags);
+	stream_putc(s, r->algorithm);
+	stream_putc(s, r->loc_size);
+	uint8_t spl = (r->loc_size + 7) / 8;
+	stream_put(s, &r->locator, spl);
 
+# if 0
 	uint8_t sub_tlv_len = 22; //TODO(slankdev): magic number
 	stream_putc(s, sub_tlv_len);
+#endif
+
+	if (r->subtlvs)
+		return pack_item_srv6_loc_subtlvs(r->subtlvs, s);
 
 	// SRv6 Node Segment
-	struct isis_srv6_sid_end sid_end;
-	sid_end.type = 5;
-	sid_end.length = 20;
-	sid_end.endpoint_behavior = SRV6_END_BEHAVIOR_END;
-	for (int i = 0; i < 16; i++)
-		sid_end.sids[0].s6_addr[i] = node_segment.sid.s6_addr[i];
-	stream_putc(s, sid_end.type);
-	stream_putc(s, sid_end.length);
-	stream_putc(s, sid_end.flags);
-	stream_putw(s, sid_end.endpoint_behavior);
-	stream_put(s, &sid_end.sids[0], 16);
-	stream_putc(s, 0);
-
-	struct isis_srv6_sid_structure sid_str;
-	sid_str.type = 1;
-	sid_str.length = 4;
-	// TODO(nyatsume)
-	sid_str.lb_length = 48;
-	sid_str.ln_length = 16;
-	sid_str.fun_length = 64;
-	sid_str.arg_length = 0;
-
-	stream_putc(s, sid_str.type);
-	stream_putc(s, sid_str.length);
-	stream_putc(s, sid_str.lb_length);
-	stream_putc(s, sid_str.ln_length);
-	stream_putc(s, sid_str.fun_length);
-	stream_putc(s, sid_str.arg_length);
-
-	// Finalize
-	dump_srv6_locator_info(&l);
 	return 0;
 }
 
@@ -1609,6 +1662,7 @@ static int unpack_item_srv6_locator_info(uint16_t mtid, uint8_t len,
 	sid_str.ln_length = stream_getc(s);
 	sid_str.fun_length = stream_getc(s);
 	sid_str.arg_length = stream_getc(s);
+	(void)sid_str;
 
 	// finalization
 	dump_srv6_locator_info(rv);
@@ -1632,7 +1686,7 @@ static struct isis_item *copy_item_srv6_locator_info(struct isis_item *i)
 	rv->loc_size = r->loc_size;
 	memcpy(&rv->locator, &r->locator, sizeof(r->locator));
 
-	rv->subtlvs = copy_subtlvs(r->subtlvs);
+	rv->subtlvs = copy_item_srv6_loc_subtlvs(r->subtlvs);
 
 	return (struct isis_item *)rv;
 }

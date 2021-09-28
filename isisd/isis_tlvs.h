@@ -202,7 +202,7 @@ struct isis_srv6_adj_sid {
 
 struct isis_srv6_node_sid;
 struct isis_srv6_node_sid {
-	struct isis_node_sid *next;
+	struct isis_srv6_node_sid *next;
 	struct in6_addr sid;
 };
 
