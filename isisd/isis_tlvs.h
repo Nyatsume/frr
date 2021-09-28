@@ -495,8 +495,11 @@ enum isis_tlv_type {
 	ISIS_SUBTLV_SID_END_X = 43,
 
 	ISIS_SUBTLV_MAX = 40,
-	ISIS_SUBSUBTLV_SID_STR = 1,
-	ISIS_SUBSUBTLV_MAX = 256
+
+	/* draft-ietf-lsr-isis-srv6-extensions */
+	ISIS_SUBSUBTLV_SID_STRUCTURE = 1,
+
+	ISIS_SUBSUBTLV_MAX = 256,
 };
 
 /* subTLVs size for TE and SR */
@@ -523,10 +526,19 @@ enum ext_subtlv_size {
 	/* RFC 7810 */
 	ISIS_SUBTLV_MM_DELAY_SIZE = 8,
 
+	/* draft-ietf-lsr-isis-srv6-extensions */
+	ISIS_SUBTLV_SID_END_SIZE = 26,
+
 	ISIS_SUBTLV_HDR_SIZE = 2,
 	ISIS_SUBTLV_DEF_SIZE = 4,
 
-	ISIS_SUBTLV_MAX_SIZE = 180
+	ISIS_SUBTLV_MAX_SIZE = 180,
+
+	/* draft-ietf-lsr-isis-srv6-extensions */
+	ISIS_SUBSUBTLV_SID_STRUCTURE_SIZE = 4,
+
+	ISIS_SUBSUBTLV_HDR_SIZE = 2,
+	ISIS_SUBSUBTLV_MAX_SIZE = 180,
 };
 
 /* Macros to manage the optional presence of EXT subTLVs */
@@ -618,7 +630,8 @@ struct isis_srv6_loc_subtlvs {
 
 	uint32_t status;
 
-	struct isis_item_list srv6_node_sid;
+	struct isis_srv6_sid_end sid_end;
+	struct isis_srv6_sid_structure sid_structure;
 };
 
 /* TODO(nyatsume)
