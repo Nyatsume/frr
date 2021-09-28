@@ -168,14 +168,15 @@ static struct isis_srv6_loc_subtlvs *copy_item_srv6_loc_subtlvs(struct isis_srv6
 }
 
 
-static int pack_item_srv6_loc_subtlvs(struct isis_srv6_loc_subtlvs *locs,
+static int pack_item_srv6_loc_subtlvs(struct isis_srv6_loc_subtlvs *subtlvs,
 				 struct stream *s)
 {
-	//uint8_t size;
+	marker_debug_msg("call");
 	size_t subtlv_len_pos = stream_get_endp(s);
 
 	if (STREAM_WRITEABLE(s) < 1)
 		return 1;
+
 	stream_putc(s, 0); /* Put 0 as subtlvs length, filled in later */
 
 # if 0
@@ -185,11 +186,14 @@ static int pack_item_srv6_loc_subtlvs(struct isis_srv6_loc_subtlvs *locs,
 	}
 #endif
 
-	if (IS_SUBTLV(locs, LOC_SRV6_NODE_SID)) {
+	if (IS_SUBTLV(subtlvs, LOC_SRV6_NODE_SID)) {
 		struct isis_srv6_node_sid *node;
 
-		for (node = (struct isis_srv6_node_sid *)locs->srv6_node_sid.head; node;
+		for (node = (struct isis_srv6_node_sid *)subtlvs->srv6_node_sid.head; node;
 		     node = node->next) {
+
+			marker_debug_msg("sid");
+
 			struct isis_srv6_sid_end sid_end;
 			sid_end.type = 5;
 			sid_end.length = 20;
@@ -1584,6 +1588,17 @@ static void free_item_srv6_locator_info(struct isis_item *i)
 	XFREE(MTYPE_ISIS_TLV, item);
 }
 
+static struct isis_srv6_loc_subtlvs *isis_alloc_srv6_loc_subtlvs(void)
+{
+	struct isis_srv6_loc_subtlvs *s;
+
+	s = XCALLOC(MTYPE_ISIS_SUBTLV, sizeof(struct isis_srv6_loc_subtlvs));
+	SET_SUBTLV(s, LOC_SRV6_NODE_SID);
+	init_item_list(&s->srv6_node_sid);
+
+	return s;
+}
+
 static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 				       size_t *min_len)
 {
@@ -1610,6 +1625,18 @@ static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 	uint8_t sub_tlv_len = 22; //TODO(slankdev): magic number
 	stream_putc(s, sub_tlv_len);
 #endif
+
+	if (true) {
+		struct isis_srv6_loc_subtlvs *subtlvs;
+		subtlvs = isis_alloc_srv6_loc_subtlvs();
+
+		// TODO(slankdev)
+		struct in6_addr *i = malloc(sizeof(struct in6_addr));
+		inet_pton(AF_INET6, "a::", i);
+		append_item(&subtlvs->srv6_node_sid, (struct isis_item *)i);
+
+		r->subtlvs = subtlvs;
+	}
 
 	if (r->subtlvs)
 		return pack_item_srv6_loc_subtlvs(r->subtlvs, s);
