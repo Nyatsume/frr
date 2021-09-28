@@ -1544,7 +1544,6 @@ static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 	stream_put(s, &sid_end.sids[0], 16);
 	stream_putc(s, 0);
 
-#if 1
 	struct isis_srv6_sid_structure sid_str;
 	sid_str.type = 1;
 	sid_str.length = 4;
@@ -1560,7 +1559,6 @@ static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 	stream_putc(s, sid_str.ln_length);
 	stream_putc(s, sid_str.fun_length);
 	stream_putc(s, sid_str.arg_length);
-#endif
 
 	// Finalize
 	dump_srv6_locator_info(&l);
@@ -1603,7 +1601,6 @@ static int unpack_item_srv6_locator_info(uint16_t mtid, uint8_t len,
 	dummy = stream_getc(s);
 	(void)dummy;
 
-#if 1
 	//Srv6 SID Structure
 	struct isis_srv6_sid_structure sid_str;
 	sid_str.type = stream_getc(s);
@@ -1612,9 +1609,6 @@ static int unpack_item_srv6_locator_info(uint16_t mtid, uint8_t len,
 	sid_str.ln_length = stream_getc(s);
 	sid_str.fun_length = stream_getc(s);
 	sid_str.arg_length = stream_getc(s);
-//	dummy = stream_getc(s);
-//	(void)dummy;
-#endif
 
 	// finalization
 	dump_srv6_locator_info(rv);
