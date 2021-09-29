@@ -148,8 +148,8 @@ static void dump_srv6_segment_end_x(struct isis_srv6_sid_end_x *s)
 	char b[256];
 
 	marker_debug_msg("=======");
-	marker_debug_fmsg("type:              %u", s->type);
-	marker_debug_fmsg("length:            %u", s->length);
+//	marker_debug_fmsg("type:              %u", s->type);
+//	marker_debug_fmsg("length:            %u", s->length);
 	marker_debug_fmsg("flags:             0x%02x", s->flags);
 	marker_debug_fmsg("algorithm:         0x%02x", s->algorithm);
 	marker_debug_fmsg("weight:            0x%02x", s->weight);
@@ -558,6 +558,18 @@ static void format_item_ext_subtlvs(struct isis_ext_subtlvs *exts,
 				  isis_format_id(lan->neighbor_id, 6));
 		}
 	}
+
+	if (IS_SUBTLV(exts, EXT_SRV6_ADJ_SID)) {
+		char b[256];
+		struct isis_srv6_adj_sid *srv6_adj;
+		for (srv6_adj = (struct isis_srv6_adj_sid *)exts->srv6_adj_sid.head;
+					srv6_adj;srv6_adj = srv6_adj->next) {
+				inet_ntop(AF_INET6, &srv6_adj->sid, b, sizeof(b));
+				sbuf_push(buf, indent, "End.X SID: %s\n", b);
+				marker_debug_fmsg("%s",b);
+
+		}
+	}
 }
 
 static void free_item_ext_subtlvs(struct  isis_ext_subtlvs *exts)
@@ -730,18 +742,18 @@ static int pack_item_ext_subtlvs(struct isis_ext_subtlvs *exts,
 
 		for (adj = (struct isis_srv6_adj_sid *)exts->srv6_adj_sid.head;
 			 adj; adj = adj->next) {
-
+			
 			struct isis_srv6_sid_end_x adj_segment;
-			adj_segment.type = 43;
-			adj_segment.length = 22;
+//			adj_segment.type = 43;
+//			adj_segment.length = 22;
 			adj_segment.flags = 0x00;
 			adj_segment.algorithm = 22;
 			adj_segment.weight = 22;
 			adj_segment.endpoint_behavior = SRV6_END_BEHAVIOR_END_X;
 			adj_segment.sids[0] = adj->sid;
 
-			stream_putc(s, adj_segment.type);
-			stream_putc(s, adj_segment.length);
+			stream_putc(s, ISIS_SUBTLV_SID_END_X);
+			stream_putc(s, ISIS_SUBTLV_SID_END_X_SIZE);
 			stream_putc(s, adj_segment.flags);
 			stream_putc(s, adj_segment.algorithm);
 			stream_putc(s, adj_segment.weight);
@@ -1017,6 +1029,35 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 				SET_SUBTLV(exts, EXT_LAN_ADJ_SID);
 			}
 			break;
+		case ISIS_SUBTLV_SID_END_X:
+			marker_debug_msg("call");
+			if (subtlv_len != ISIS_SUBTLV_SID_END_X_SIZE) {
+				sbuf_push(log, indent,
+						"TLV size does not match expected size of END.X SID!\n");
+			} else {
+				struct isis_srv6_sid_end_x *adj;
+
+				adj = XCALLOC(MTYPE_ISIS_SUBTLV,
+					sizeof(struct isis_srv6_sid_end_x));
+
+//				adj->type = stream_getc(s);
+//				adj->length = stream_getc(s);
+				adj->flags = stream_getc(s);
+				adj->algorithm = stream_getc(s);
+				adj->weight = stream_getc(s);
+				adj->endpoint_behavior = stream_getw(s);
+				stream_get(&adj->sids[0], s, 16);
+				dump_srv6_segment_end_x(adj);
+				marker_debug_msg("call");
+
+				uint8_t subsubtlvs_len = stream_getc(s);
+				(void) subsubtlvs_len;
+				append_item(&exts->srv6_adj_sid,
+					(struct isis_item *)adj);
+				SET_SUBTLV(exts, EXT_SRV6_ADJ_SID);
+			}
+			break;
+			
 		default:
 			/* Skip unknown TLV */
 			stream_forward_getp(s, subtlv_len);

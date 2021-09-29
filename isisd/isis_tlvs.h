@@ -244,8 +244,8 @@ struct isis_srv6_sid_end_x;
 struct isis_srv6_sid_end_x {
 	struct isis_srv6_sid_end_x *next;
 
-	uint8_t type;
-	uint8_t length;
+//	uint8_t type;
+//	uint8_t length;
 	uint8_t flags;
 	uint8_t algorithm;
 	uint8_t weight;
@@ -528,6 +528,7 @@ enum ext_subtlv_size {
 
 	/* draft-ietf-lsr-isis-srv6-extensions */
 	ISIS_SUBTLV_SID_END_SIZE = 26,
+	ISIS_SUBTLV_SID_END_X_SIZE = 22,
 
 	ISIS_SUBTLV_HDR_SIZE = 2,
 	ISIS_SUBTLV_DEF_SIZE = 4,
