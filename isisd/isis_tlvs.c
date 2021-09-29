@@ -1036,9 +1036,11 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 						"TLV size does not match expected size of END.X SID!\n");
 			} else {
 				struct isis_srv6_sid_end_x *adj;
+				struct isis_srv6_adj_sid *srv6_adj_sid;
 
 				adj = XCALLOC(MTYPE_ISIS_SUBTLV,
 					sizeof(struct isis_srv6_sid_end_x));
+				srv6_adj_sid = XCALLOC(MTYPE_ISIS_SUBTLV, sizeof(*srv6_adj_sid));
 
 //				adj->type = stream_getc(s);
 //				adj->length = stream_getc(s);
@@ -1047,19 +1049,21 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 				adj->weight = stream_getc(s);
 				adj->endpoint_behavior = stream_getw(s);
 				stream_get(&adj->sids[0], s, 16);
+				srv6_adj_sid->sid = adj->sids[0];
 				dump_srv6_segment_end_x(adj);
 				marker_debug_msg("call");
 
 				uint8_t subsubtlvs_len = stream_getc(s);
 				(void) subsubtlvs_len;
-				append_item(&exts->srv6_adj_sid,
-					(struct isis_item *)adj);
-				SET_SUBTLV(exts, EXT_SRV6_ADJ_SID);
+//				append_item(&exts->srv6_adj_sid,
+//					(struct isis_item *)adj);
+//				SET_SUBTLV(exts, EXT_SRV6_ADJ_SID);
+				isis_tlvs_add_srv6_adj_sid(exts, srv6_adj_sid);
 			}
 			break;
 			
 		default:
-			/* Skip unknown TLV */
+			/* Skip unknown TLV */ 
 			stream_forward_getp(s, subtlv_len);
 			break;
 		}
