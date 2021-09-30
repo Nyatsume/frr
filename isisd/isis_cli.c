@@ -72,9 +72,6 @@ DEFPY_YANG_NOSH(router_isis, router_isis_cmd,
 	return ret;
 }
 
-void cli_show_isis_srv6(struct vty *vty, struct lyd_node *dnode, bool show_defaults)
-{
-}
 
 char srv6_locator[256];
 DEFPY(isis_srv6_locator,
@@ -167,14 +164,17 @@ DEFUN(show_srv6, show_srv6_cmd,
 
 	return CMD_SUCCESS;
 }
+
 void cli_show_isis_sr_srv6_locator(struct vty *vty, struct lyd_node *dnode,
 		bool show_defaults)
 {
-	marker_debug_msg("call");
-	 vty_out(vty, " srv6-locator %s\n",
+	if (true) {
+		marker_debug_msg("call");
+	}
+
+	 vty_out(vty, " srv6 locator %s\n",
 	 		yang_dnode_get_string(dnode, "."));
 }
-
 
 struct if_iter {
 	struct vty *vty;
@@ -3408,8 +3408,6 @@ void isis_cli_init(void)
 	install_element(INTERFACE_NODE, &isis_mpls_if_ldp_sync_holddown_cmd);
 	install_element(INTERFACE_NODE, &no_isis_mpls_if_ldp_sync_holddown_cmd);
 
-
-	install_element(ISIS_NODE, &isis_srv6_locator_cmd);
 	install_element(ISIS_NODE, &isis_srv6_locator_cmd);
 	//install_element(ISIS_NODE, &no_isis_srv6_locator_cmd);
 }
