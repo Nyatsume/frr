@@ -1936,6 +1936,7 @@ int isis_instance_mpls_te_router_address_destroy(
 int isis_instance_segment_routing_enabled_modify(
 	struct nb_cb_modify_args *args)
 {
+	marker_debug_msg("call");
 	struct isis_area *area;
 
 	if (args->event != NB_EV_APPLY)
