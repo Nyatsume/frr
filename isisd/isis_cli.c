@@ -84,13 +84,17 @@ DEFPY(isis_srv6_locator,
 		"SRv6 locator\n"
 		"SRv6 locator name\n")
 {
+	marker_debug_msg("call");
+
 	int ret;
 	snprintf(srv6_locator, sizeof(srv6_locator),"%s", locname);
 	ret = isis_zebra_srv6_manager_get_locator_chunk(locname);
 	if (ret < 0)
 		return CMD_WARNING_CONFIG_FAILED;
 
-	return CMD_SUCCESS;
+	nb_cli_enqueue_change(vty, "./segment-routing/srv6-locator",
+					      NB_OP_MODIFY, locname);
+	return nb_cli_apply_changes(vty, NULL);
 }
 
 static json_object *adj_segments_json_add(struct isis_srv6_adj_segment *adj_seg)
@@ -163,11 +167,12 @@ DEFUN(show_srv6, show_srv6_cmd,
 
 	return CMD_SUCCESS;
 }
-void cli_show_isis_srv6_srv6_locator(struct vty *vty, struct lyd_node *dnode,
+void cli_show_isis_sr_srv6_locator(struct vty *vty, struct lyd_node *dnode,
 		bool show_defaults)
 {
-	vty_out(vty, " srv6-locator %s\n",
-			yang_dnode_get_string(dnode, "./srv6-locator-name"));
+	marker_debug_msg("call");
+	// vty_out(vty, " srv6-locator %s\n",
+	// 		yang_dnode_get_string(dnode, "./srv6-locator"));
 }
 
 
@@ -1596,6 +1601,7 @@ DEFPY_YANG (isis_sr_enable,
        SR_STR
        "Enable Segment Routing\n")
 {
+	marker_debug_msg("call");
 	nb_cli_enqueue_change(vty, "./segment-routing/enabled", NB_OP_MODIFY,
 			      "true");
 
@@ -1618,6 +1624,7 @@ DEFPY_YANG (no_isis_sr_enable,
 void cli_show_isis_sr_enabled(struct vty *vty, struct lyd_node *dnode,
 			      bool show_defaults)
 {
+	marker_debug_msg("call");
 	if (!yang_dnode_get_bool(dnode, NULL))
 		vty_out(vty, " no");
 
