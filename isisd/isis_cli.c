@@ -72,6 +72,24 @@ DEFPY_YANG_NOSH(router_isis, router_isis_cmd,
 	return ret;
 }
 
+DEFPY_YANG_NOSH(segment_routing_srv6, segment_routing_srv6_cmd,
+		"segment-routing srv6",
+		"Segment-Routing\n"
+		"Segment-Routing IPv6\n")
+{
+	int ret;
+	char base_xpath[XPATH_MAXLEN];
+
+	snprintf(base_xpath, XPATH_MAXLEN, "./segment-routing/srv6");
+	nb_cli_enqueue_change(vty, ".", NB_OP_CREATE, NULL);
+
+	ret = nb_cli_apply_changes(vty, base_xpath);
+	if (ret == CMD_SUCCESS)
+		VTY_PUSH_XPATH(ISIS_SRV6_NODE, base_xpath);
+
+	return ret;
+}
+
 void cli_show_isis_srv6(struct vty *vty, struct lyd_node *dnode, bool show_defaults)
 {
 }
@@ -167,14 +185,17 @@ DEFUN(show_srv6, show_srv6_cmd,
 
 	return CMD_SUCCESS;
 }
+
 void cli_show_isis_sr_srv6_locator(struct vty *vty, struct lyd_node *dnode,
 		bool show_defaults)
 {
-	marker_debug_msg("call");
-	 vty_out(vty, " srv6-locator %s\n",
+	if (true) {
+		marker_debug_msg("call");
+	}
+
+	 vty_out(vty, " srv6 locator %s\n",
 	 		yang_dnode_get_string(dnode, "."));
 }
-
 
 struct if_iter {
 	struct vty *vty;
@@ -253,6 +274,26 @@ void cli_show_router_isis(struct vty *vty, struct lyd_node *dnode,
 }
 
 void cli_show_router_isis_end(struct vty *vty, struct lyd_node *dnode)
+{
+	vty_out(vty, "exit\n");
+}
+
+void cli_show_isis_sr_srv6(struct vty *vty, struct lyd_node *dnode,
+			  bool show_defaults)
+{
+	const char *vrf = NULL;
+
+	vrf = yang_dnode_get_string(dnode, "./vrf");
+
+	vty_out(vty, "!\n");
+	vty_out(vty, "router isis %s",
+		yang_dnode_get_string(dnode, "./area-tag"));
+	if (!strmatch(vrf, VRF_DEFAULT_NAME))
+		vty_out(vty, " vrf %s", yang_dnode_get_string(dnode, "./vrf"));
+	vty_out(vty, "\n");
+}
+
+void cli_show_isis_sr_srv6_end(struct vty *vty, struct lyd_node *dnode)
 {
 	vty_out(vty, "exit\n");
 }
@@ -3341,6 +3382,8 @@ void isis_cli_init(void)
 	install_element(ISIS_NODE, &isis_redistribute_cmd);
 
 	install_element(ISIS_NODE, &isis_topology_cmd);
+
+	install_element(ISIS_NODE, &segment_routing_srv6_cmd);
 
 	install_element(ISIS_NODE, &isis_sr_enable_cmd);
 	install_element(ISIS_NODE, &no_isis_sr_enable_cmd);

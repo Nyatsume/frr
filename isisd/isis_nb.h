@@ -225,6 +225,8 @@ int lib_interface_isis_bfd_monitoring_profile_modify(
 	struct nb_cb_modify_args *args);
 int lib_interface_isis_bfd_monitoring_profile_destroy(
 	struct nb_cb_destroy_args *args);
+int isis_instance_sr_srv6_create(struct nb_cb_create_args *args);
+int isis_instance_sr_srv6_destroy(struct nb_cb_destroy_args *args);
 int isis_instance_segment_routing_enabled_modify(
 	struct nb_cb_modify_args *args);
 int isis_instance_segment_routing_enabled_modify(
@@ -253,6 +255,10 @@ int isis_instance_segment_routing_prefix_sid_map_prefix_sid_last_hop_behavior_mo
 	struct nb_cb_modify_args *args);
 int isis_instance_segment_routing_prefix_sid_map_prefix_sid_n_flag_clear_modify(
 	struct nb_cb_modify_args *args);
+
+void cli_show_isis_sr_srv6(struct vty *vty, struct lyd_node *dnode, bool show_defaults);
+void cli_show_isis_sr_srv6_end(struct vty *vty, struct lyd_node *dnode);
+
 void cli_show_isis_srv6(struct vty *vty, struct lyd_node *dnode, bool show_defaults);
 int isis_instance_segment_routing_srv6_locator_create(enum nb_event event, const struct lyd_node *dnode, union nb_resource *resource);
 int isis_instance_segment_routing_srv6_locator_destroy(enum nb_event event, const struct lyd_node *dnode);

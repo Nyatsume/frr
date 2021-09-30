@@ -1122,6 +1122,13 @@ static struct cmd_node isis_node = {
 	.parent_node = CONFIG_NODE,
 	.prompt = "%s(config-router)# ",
 };
+
+static struct cmd_node isis_srv6_node = {
+	.name = "isis-srv6",
+	.node = ISIS_SRV6_NODE,
+	.parent_node = ISIS_NODE,
+	.prompt = "%s(config-router-srv6)# ",
+};
 #endif /* HAVE_ISISD */
 
 #ifdef HAVE_FABRICD
@@ -2042,6 +2049,15 @@ DEFUNSH(VTYSH_ISISD, router_isis, router_isis_cmd,
 	vty->node = ISIS_NODE;
 	return CMD_SUCCESS;
 }
+
+DEFUNSH(VTYSH_ISISD, isis_srv6, isis_srv6_cmd,
+	"segment-routing srv6",
+	"Segment-Routing\n"
+	"Segment-Routing IPv6\n")
+{
+	vty->node = ISIS_SRV6_NODE;
+	return CMD_SUCCESS;
+}
 #endif /* HAVE_ISISD */
 
 #ifdef HAVE_FABRICD
@@ -2502,6 +2518,20 @@ DEFUNSH(VTYSH_ISISD, vtysh_exit_isisd, vtysh_exit_isisd_cmd, "exit",
 }
 
 DEFUNSH(VTYSH_ISISD, vtysh_quit_isisd, vtysh_quit_isisd_cmd, "quit",
+	"Exit current mode and down to previous mode\n")
+{
+	return vtysh_exit_isisd(self, vty, argc, argv);
+}
+#endif /* HAVE_ISISD */
+
+#ifdef HAVE_ISISD
+DEFUNSH(VTYSH_ISISD, vtysh_exit_isis_srv6, vtysh_exit_isis_srv6_cmd, "exit",
+	"Exit current mode and down to previous mode\n")
+{
+	return vtysh_exit(vty);
+}
+
+DEFUNSH(VTYSH_ISISD, vtysh_quit_isis_srv6, vtysh_quit_isis_srv6_cmd, "quit",
 	"Exit current mode and down to previous mode\n")
 {
 	return vtysh_exit_isisd(self, vty, argc, argv);
@@ -4193,6 +4223,12 @@ void vtysh_init_vty(void)
 	install_element(ISIS_NODE, &vtysh_exit_isisd_cmd);
 	install_element(ISIS_NODE, &vtysh_quit_isisd_cmd);
 	install_element(ISIS_NODE, &vtysh_end_all_cmd);
+
+	install_node(&isis_srv6_node);
+	install_element(ISIS_NODE, &isis_srv6_cmd);
+	install_element(ISIS_SRV6_NODE, &vtysh_exit_isis_srv6_cmd);
+	install_element(ISIS_SRV6_NODE, &vtysh_quit_isis_srv6_cmd);
+	install_element(ISIS_SRV6_NODE, &vtysh_end_all_cmd);
 #endif /* HAVE_ISISD */
 
 	/* fabricd */
