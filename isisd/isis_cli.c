@@ -171,8 +171,8 @@ void cli_show_isis_sr_srv6_locator(struct vty *vty, struct lyd_node *dnode,
 		bool show_defaults)
 {
 	marker_debug_msg("call");
-	// vty_out(vty, " srv6-locator %s\n",
-	// 		yang_dnode_get_string(dnode, "./srv6-locator"));
+	 vty_out(vty, " srv6-locator %s\n",
+	 		yang_dnode_get_string(dnode, "."));
 }
 
 
