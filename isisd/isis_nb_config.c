@@ -2382,55 +2382,24 @@ int isis_instance_segment_routing_prefix_sid_map_prefix_sid_n_flag_clear_modify(
 /*
  * XPath: /frr-isisd:isis/instance/srv6/srv6-locator
  */
-int isis_srv6_srv6_locator_create(enum nb_event event, const struct lyd_node *dnode, union nb_resource *resource)
+int isis_instance_segment_routing_srv6_locator_create(enum nb_event event, const struct lyd_node *dnode, union nb_resource *resource)
 {
-#if 0
 	marker_debug_msg("call");
-	struct isis_area *area;
-	const char *area_tag, *locname;
-	struct isis_srv6_locator *locator;
-	struct prefix_ipv6 prefix = { .family = AF_INET6, };
-	area_tag = yang_dnode_get_string(dnode->parent->parent, "./area-tag");
-	marker_debug_msg("call");
-
-	locname = yang_dnode_get_string(dnode, "./srv6-locator-name");
-	marker_debug_msg("call");
-	//area = isis_area_lookup(area_tag);
-	switch (event) {
-		case NB_EV_VALIDATE:
-			if (isis_srv6_locator_lookup(locname, area)) {
-				marker_debug_msg("call");
-				return NB_ERR_VALIDATION;
-			}
-			break;
-		case NB_EV_PREPARE:
-		case NB_EV_ABORT:
-			break;
-		case NB_EV_APPLY:
-			marker_debug_msg("call");
-			locator = isis_srv6_locator_alloc(locname);
-			marker_debug_msg("call");
-			locator->prefix = prefix;
-			marker_debug_msg("call");
-			isis_srv6_locator_add(locator, area);
-			marker_debug_msg("call");
-			break;
-	}
-	zlog_debug("created");
-#endif
 	return NB_OK;
 }
 
-int isis_srv6_srv6_locator_destroy(enum nb_event event, const struct lyd_node *dnode)
+int isis_instance_segment_routing_srv6_locator_destroy(enum nb_event event, const struct lyd_node *dnode)
 {
-	zlog_debug("destroyed");
+	marker_debug_msg("call");
 	return NB_OK;
 }
 
-int isis_srv6_srv6_locator_modify(enum nb_event event, const struct lyd_node *dnode, union nb_resource *resource)
+int isis_instance_segment_routing_srv6_locator_modify(struct nb_cb_modify_args *args)
 {
+	marker_debug_msg("call");
 	return NB_OK;
 }
+
 /*
  * XPath: /frr-isisd:isis/instance/mpls/ldp-sync
  */

@@ -567,6 +567,13 @@ const struct frr_yang_module_info frr_isisd_info = {
 			},
 		},
 		{
+			.xpath = "/frr-isisd:isis/instance/segment-routing/srv6-locator",
+			.cbs = {
+				.modify = isis_instance_segment_routing_srv6_locator_modify,
+				.cli_show = cli_show_isis_srv6_srv6_locator,
+			}
+		},
+		{
 			.xpath = "/frr-isisd:isis/instance/segment-routing/enabled",
 			.cbs = {
 				.modify = isis_instance_segment_routing_enabled_modify,
@@ -931,15 +938,6 @@ const struct frr_yang_module_info frr_isisd_info = {
 				.cli_show = cli_show_ip_isis_mt_ipv6_dstsrc,
 				.modify = lib_interface_isis_multi_topology_ipv6_dstsrc_modify,
 			},
-		},
-		{
-			.xpath = "/frr-isisd:isis/instance/srv6/srv6-locator",
-			.cbs = {
-				.cli_show = cli_show_isis_srv6_srv6_locator,
-				.create = isis_srv6_srv6_locator_create,
-				.destroy = isis_srv6_srv6_locator_destroy,
-				.modify = isis_srv6_srv6_locator_modify,
-			}
 		},
 		{
 			.xpath = "/frr-interface:lib/interface/frr-isisd:isis/fast-reroute",

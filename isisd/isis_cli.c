@@ -92,7 +92,9 @@ DEFPY(isis_srv6_locator,
 	if (ret < 0)
 		return CMD_WARNING_CONFIG_FAILED;
 
-	return CMD_SUCCESS;
+	nb_cli_enqueue_change(vty, "./segment-routing/srv6-locator",
+					      NB_OP_MODIFY, locname);
+	return nb_cli_apply_changes(vty, NULL);
 }
 
 static json_object *adj_segments_json_add(struct isis_srv6_adj_segment *adj_seg)
@@ -170,7 +172,7 @@ void cli_show_isis_srv6_srv6_locator(struct vty *vty, struct lyd_node *dnode,
 {
 	marker_debug_msg("call");
 	vty_out(vty, " srv6-locator %s\n",
-			yang_dnode_get_string(dnode, "./srv6-locator-name"));
+			yang_dnode_get_string(dnode, "./srv6-locator"));
 }
 
 

@@ -1486,6 +1486,11 @@ module frr-isisd {
       container segment-routing {
         description
           "Segment Routing global configuration.";
+        leaf srv6-locator {
+          type string;
+          default "slankdev";
+          description "HOGEHOGE.";
+        }
         leaf enabled {
           type boolean;
           default "false";
