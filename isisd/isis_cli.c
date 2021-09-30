@@ -72,6 +72,42 @@ DEFPY_YANG_NOSH(router_isis, router_isis_cmd,
 	return ret;
 }
 
+DEFPY_YANG_NOSH(segment_routing_srv6, segment_routing_srv6_cmd,
+		"segment-routing srv6",
+		"Segment-Routing\n"
+		"Segment-Routing IPv6\n")
+{
+	int ret;
+	char base_xpath[XPATH_MAXLEN];
+
+	snprintf(base_xpath, XPATH_MAXLEN, "./segment-routing/srv6");
+	nb_cli_enqueue_change(vty, ".", NB_OP_CREATE, NULL);
+
+	ret = nb_cli_apply_changes(vty, base_xpath);
+	if (ret == CMD_SUCCESS)
+		VTY_PUSH_XPATH(ISIS_SRV6_NODE, base_xpath);
+
+	return ret;
+}
+
+DEFPY_YANG(no_segment_routing_srv6, no_segment_routing_srv6_cmd,
+	   "no segment-routing srv6",
+	   NO_STR
+	   "Segment-Routing\n"
+	   "Segment-Routing IPv6\n")
+{
+	char base_xpath[XPATH_MAXLEN];
+
+	snprintf(base_xpath, XPATH_MAXLEN, "./segment-routing/srv6");
+
+	if (!yang_dnode_existsf(vty->candidate_config->dnode, base_xpath)) {
+		vty_out(vty, "ISIS srv6 config not found.\n");
+		return CMD_ERR_NOTHING_TODO;
+	}
+
+	nb_cli_enqueue_change(vty, ".", NB_OP_DESTROY, NULL);
+	return nb_cli_apply_changes_clear_pending(vty, base_xpath);
+}
 
 char srv6_locator[256];
 DEFPY(isis_srv6_locator,
@@ -253,6 +289,26 @@ void cli_show_router_isis(struct vty *vty, struct lyd_node *dnode,
 }
 
 void cli_show_router_isis_end(struct vty *vty, struct lyd_node *dnode)
+{
+	vty_out(vty, "exit\n");
+}
+
+void cli_show_isis_sr_srv6(struct vty *vty, struct lyd_node *dnode,
+			  bool show_defaults)
+{
+	const char *vrf = NULL;
+
+	vrf = yang_dnode_get_string(dnode, "./vrf");
+
+	vty_out(vty, "!\n");
+	vty_out(vty, "router isis %s",
+		yang_dnode_get_string(dnode, "./area-tag"));
+	if (!strmatch(vrf, VRF_DEFAULT_NAME))
+		vty_out(vty, " vrf %s", yang_dnode_get_string(dnode, "./vrf"));
+	vty_out(vty, "\n");
+}
+
+void cli_show_isis_sr_srv6_end(struct vty *vty, struct lyd_node *dnode)
 {
 	vty_out(vty, "exit\n");
 }
@@ -3341,6 +3397,9 @@ void isis_cli_init(void)
 	install_element(ISIS_NODE, &isis_redistribute_cmd);
 
 	install_element(ISIS_NODE, &isis_topology_cmd);
+
+	install_element(ISIS_NODE, &segment_routing_srv6_cmd);
+	install_element(ISIS_NODE, &no_segment_routing_srv6_cmd);
 
 	install_element(ISIS_NODE, &isis_sr_enable_cmd);
 	install_element(ISIS_NODE, &no_isis_sr_enable_cmd);

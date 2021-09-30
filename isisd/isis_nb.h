@@ -225,6 +225,8 @@ int lib_interface_isis_bfd_monitoring_profile_modify(
 	struct nb_cb_modify_args *args);
 int lib_interface_isis_bfd_monitoring_profile_destroy(
 	struct nb_cb_destroy_args *args);
+int isis_instance_sr_srv6_create(struct nb_cb_create_args *args);
+int isis_instance_sr_srv6_destroy(struct nb_cb_destroy_args *args);
 int isis_instance_segment_routing_enabled_modify(
 	struct nb_cb_modify_args *args);
 int isis_instance_segment_routing_enabled_modify(
@@ -554,6 +556,8 @@ void cli_show_isis_mpls_if_ldp_sync_holddown(struct vty *vty,
 					     bool show_defaults);
 void cli_show_isis_sr_srv6_locator(struct vty *vty, struct lyd_node *dnode,
 	       				bool show_defaults);
+void cli_show_isis_sr_srv6(struct vty *vty, struct lyd_node *dnode, bool show_defaults);
+void cli_show_isis_sr_srv6_end(struct vty *vty, struct lyd_node *dnode);
 
 /* Notifications. */
 void isis_notif_db_overload(const struct isis_area *area, bool overload);

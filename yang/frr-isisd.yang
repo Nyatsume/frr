@@ -1491,6 +1491,9 @@ module frr-isisd {
           default "slankdev";
           description "HOGEHOGE.";
         }
+        container srv6 {
+          description "hoge";
+        }
         leaf enabled {
           type boolean;
           default "false";
