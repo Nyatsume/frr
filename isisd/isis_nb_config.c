@@ -1931,21 +1931,6 @@ int isis_instance_mpls_te_router_address_destroy(
 }
 
 /*
- * XPath: /frr-isisd:isis/instance/segment-routing/srv6
- */
-int isis_instance_sr_srv6_create(struct nb_cb_create_args *args)
-{
-	marker_debug_msg("call");
-	return NB_OK;
-}
-
-int isis_instance_sr_srv6_destroy(struct nb_cb_destroy_args *args)
-{
-	marker_debug_msg("call");
-	return NB_OK;
-}
-
-/*
  * XPath: /frr-isisd:isis/instance/segment-routing/enabled
  */
 int isis_instance_segment_routing_enabled_modify(
