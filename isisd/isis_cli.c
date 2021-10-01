@@ -78,14 +78,15 @@ DEFPY_YANG_NOSH(segment_routing_srv6, segment_routing_srv6_cmd,
 		"Segment-Routing IPv6\n")
 {
 	int ret;
-	char base_xpath[XPATH_MAXLEN];
+	char xpath[XPATH_MAXLEN];
 
-	snprintf(base_xpath, XPATH_MAXLEN, "./segment-routing/srv6");
-	nb_cli_enqueue_change(vty, ".", NB_OP_CREATE, NULL);
+	snprintf(xpath, sizeof(xpath), "%s/segment-routing/srv6",
+		 VTY_CURR_XPATH);
+        nb_cli_enqueue_change(vty, ".", NB_OP_CREATE, NULL);
 
-	ret = nb_cli_apply_changes(vty, base_xpath);
+	ret = nb_cli_apply_changes(vty, "./segment-routing/srv6");
 	if (ret == CMD_SUCCESS)
-		VTY_PUSH_XPATH(ISIS_SRV6_NODE, base_xpath);
+		VTY_PUSH_XPATH(ISIS_SRV6_NODE, xpath);
 
 	return ret;
 }
@@ -109,24 +110,26 @@ DEFPY_YANG(no_segment_routing_srv6, no_segment_routing_srv6_cmd,
 	return nb_cli_apply_changes_clear_pending(vty, base_xpath);
 }
 
-char srv6_locator[256];
 DEFPY(isis_srv6_locator,
 		isis_srv6_locator_cmd,
-		"srv6 locator WORD$locname",
-		"Segment-Routing SRv6\n"
+		"locator WORD$locname",
 		"SRv6 locator\n"
 		"SRv6 locator name\n")
 {
 	marker_debug_msg("call");
+	nb_cli_enqueue_change(vty, "./locator", NB_OP_MODIFY, locname);
+	return nb_cli_apply_changes(vty, NULL);
+}
 
-	int ret;
-	snprintf(srv6_locator, sizeof(srv6_locator),"%s", locname);
-	ret = isis_zebra_srv6_manager_get_locator_chunk(locname);
-	if (ret < 0)
-		return CMD_WARNING_CONFIG_FAILED;
-
-	nb_cli_enqueue_change(vty, "./segment-routing/srv6-locator",
-					      NB_OP_MODIFY, locname);
+DEFPY(no_isis_srv6_locator,
+		no_isis_srv6_locator_cmd,
+		"no locator WORD$locname",
+		NO_STR
+		"SRv6 locator\n"
+		"SRv6 locator name\n")
+{
+	marker_debug_msg("call");
+	nb_cli_enqueue_change(vty, "./locator", NB_OP_MODIFY, NULL);
 	return nb_cli_apply_changes(vty, NULL);
 }
 
@@ -156,19 +159,14 @@ DEFUN(show_srv6, show_srv6_cmd,
 	json_object *adj_segments_json = NULL;
 	json_object *adj_segments_json_per_sid = NULL;
 
-
 	char b[256];
 
 	if (uj) {
 		json = json_object_new_object();
 		node_segment_json = json_object_new_object();
 		adj_segments_json = json_object_new_array();
-	//	sid_json = json_object_new_object();
-		json_object_string_add(json, "locator", srv6_locator);
 		json_object_string_add(node_segment_json, "sid", inet_ntop(AF_INET6, &node_segment.sid, b, 256));
 		json_object_object_add(json, "node_segment", node_segment_json);
-		//json_object_string_add(json, "node-sid", 
-		//		inet_ntop(AF_INET6, &node_segment.sid, b, 256));
 		json_object_object_add(json, "adj_segments", adj_segments_json);
 
 
@@ -182,11 +180,8 @@ DEFUN(show_srv6, show_srv6_cmd,
 				json_object_to_json_string_ext(
 					json, JSON_C_TO_STRING_PRETTY));
 		marker_debug_msg("call");
-	//	json_object_free(json);
-	//	marker_debug_msg("call");
 		return CMD_SUCCESS;
 	}
-	vty_out(vty, "locator: %s\n",srv6_locator);
 
 	vty_out(vty, "node-sid: %s\n",
 			inet_ntop(AF_INET6, &node_segment.sid, b, 256));
@@ -199,17 +194,6 @@ DEFUN(show_srv6, show_srv6_cmd,
 
 
 	return CMD_SUCCESS;
-}
-
-void cli_show_isis_sr_srv6_locator(struct vty *vty, struct lyd_node *dnode,
-		bool show_defaults)
-{
-	if (true) {
-		marker_debug_msg("call");
-	}
-
-	 vty_out(vty, " srv6 locator %s\n",
-	 		yang_dnode_get_string(dnode, "."));
 }
 
 struct if_iter {
@@ -297,13 +281,20 @@ void cli_show_isis_sr_srv6(struct vty *vty, struct lyd_node *dnode,
 			  bool show_defaults)
 {
 	marker_debug_msg("call");
-	vty_out(vty, "\n");
+	vty_out(vty, " segment-routing srv6\n");
 }
 
 void cli_show_isis_sr_srv6_end(struct vty *vty, struct lyd_node *dnode)
 {
 	marker_debug_msg("call");
-	vty_out(vty, "exit\n");
+	vty_out(vty, " exit\n");
+}
+
+void cli_show_isis_sr_srv6_locator(struct vty *vty, struct lyd_node *dnode,
+		bool show_defaults)
+{
+	marker_debug_msg("call");
+	vty_out(vty, "  locator %s\n", yang_dnode_get_string(dnode, "."));
 }
 
 /*
@@ -3460,8 +3451,8 @@ void isis_cli_init(void)
 	install_element(INTERFACE_NODE, &isis_mpls_if_ldp_sync_holddown_cmd);
 	install_element(INTERFACE_NODE, &no_isis_mpls_if_ldp_sync_holddown_cmd);
 
-	install_element(ISIS_NODE, &isis_srv6_locator_cmd);
-	//install_element(ISIS_NODE, &no_isis_srv6_locator_cmd);
+	install_element(ISIS_SRV6_NODE, &isis_srv6_locator_cmd);
+	install_element(ISIS_SRV6_NODE, &no_isis_srv6_locator_cmd);
 }
 
 #endif /* ifndef FABRICD */
