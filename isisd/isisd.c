@@ -3053,6 +3053,7 @@ struct cmd_node router_node = {
 	.prompt = "%s(config-router)# ",
 	.config_write = isis_config_write,
 };
+#endif /* ifdef FABRICD */
 
 struct cmd_node isis_srv6_node = {
 	.name = "isis-srv6",
@@ -3060,7 +3061,6 @@ struct cmd_node isis_srv6_node = {
 	.parent_node = ISIS_NODE,
 	.prompt = "%s(config-router-srv6)# ",
 };
-#endif /* ifdef FABRICD */
 
 void isis_init(void)
 {

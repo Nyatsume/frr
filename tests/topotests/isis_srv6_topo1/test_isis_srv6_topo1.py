@@ -190,8 +190,8 @@ def test_rib():
 #		  srv6 locator loc1
 #		"""
 #	)
-    check("r1", "show isis seg srv6 json", "r1/sid.json")
-   # check("r1", "show ipv6 route json", "r1/route.json")
+   # check("r1", "show isis seg srv6 json", "r1/sid.json")
+    check("r1", "show ipv6 route json", "r1/route.json")
 
 
 if __name__ == "__main__":
