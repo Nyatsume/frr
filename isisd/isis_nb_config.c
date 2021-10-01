@@ -52,6 +52,7 @@
 #include "isisd/isis_ldp_sync.h"
 #include "isisd/isis_dr.h"
 #include "isisd/isis_sr.h"
+#include "isisd/isis_zebra.h"
 
 DEFINE_MTYPE_STATIC(ISISD, ISIS_MPLS_TE,    "ISIS MPLS_TE parameters");
 DEFINE_MTYPE_STATIC(ISISD, ISIS_PLIST_NAME, "ISIS prefix-list name");
@@ -1942,6 +1943,29 @@ int isis_instance_sr_srv6_create(struct nb_cb_create_args *args)
 int isis_instance_sr_srv6_destroy(struct nb_cb_destroy_args *args)
 {
 	marker_debug_msg("call");
+	return NB_OK;
+}
+
+/*
+ * XPath: /frr-isisd:isis/instance/segment-routing/srv6/locator
+ */
+int isis_instance_sr_srv6_locator_modify(struct nb_cb_modify_args *args)
+{
+	marker_debug_fmsg("call %s", yang_dnode_get_string(args->dnode, "."));
+	int ret;
+	const char *locname = yang_dnode_get_string(args->dnode, ".");
+
+	switch (args->event) {
+	case NB_EV_APPLY:
+		ret = isis_zebra_srv6_manager_get_locator_chunk(locname);
+		if (ret < 0)
+			return NB_ERR_NO_CHANGES;
+		break;
+	case NB_EV_PREPARE:
+	case NB_EV_VALIDATE:
+	case NB_EV_ABORT:
+		break;
+	}
 	return NB_OK;
 }
 

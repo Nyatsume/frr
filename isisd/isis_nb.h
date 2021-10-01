@@ -227,6 +227,7 @@ int lib_interface_isis_bfd_monitoring_profile_destroy(
 	struct nb_cb_destroy_args *args);
 int isis_instance_sr_srv6_create(struct nb_cb_create_args *args);
 int isis_instance_sr_srv6_destroy(struct nb_cb_destroy_args *args);
+int isis_instance_sr_srv6_locator_modify(struct nb_cb_modify_args *args);
 int isis_instance_segment_routing_enabled_modify(
 	struct nb_cb_modify_args *args);
 int isis_instance_segment_routing_enabled_modify(
