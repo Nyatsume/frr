@@ -3,13 +3,13 @@
     {
       "prefix":"2001:db8:1:1::/64",
       "prefixLen":64,
-      "protocol":"connected",
+      "protocol":"isis",
       "vrfId":0,
       "vrfName":"default",
       "selected":true,
       "destSelected":true,
-      "distance":0,
-      "metric":0,
+      "distance":115,
+      "metric":20,
       "installed":true,
       "table":254,
       "internalStatus":16,
@@ -19,9 +19,11 @@
       "nexthops":[
         {
           "flags":3,
-          "directlyConnected":true,
-          "interfaceName":"eth2",
-          "active":true
+          "fib":true,
+          "afi":"ipv6",
+          "interfaceName":"eth1",
+          "active":true,
+          "weight":1
         }
       ]
     }
@@ -30,13 +32,13 @@
     {
       "prefix":"2001:db8:1:2::/64",
       "prefixLen":64,
-      "protocol":"connected",
+      "protocol":"isis",
       "vrfId":0,
       "vrfName":"default",
       "selected":true,
       "destSelected":true,
-      "distance":0,
-      "metric":0,
+      "distance":115,
+      "metric":20,
       "installed":true,
       "table":254,
       "internalStatus":16,
@@ -45,10 +47,12 @@
       "internalNextHopActiveNum":1,
       "nexthops":[
         {
+          "flags":3,
           "fib":true,
-          "directlyConnected":true,
-          "interfaceName":"eth0",
-          "active":true
+          "afi":"ipv6",
+          "interfaceName":"eth1",
+          "active":true,
+          "weight":1
         }
       ]
     }
@@ -91,19 +95,27 @@
       "selected":true,
       "destSelected":true,
       "distance":115,
-      "metric":20,
+      "metric":30,
       "installed":true,
       "table":254,
       "internalStatus":16,
       "internalFlags":8,
-      "internalNextHopNum":1,
-      "internalNextHopActiveNum":1,
+      "internalNextHopNum":2,
+      "internalNextHopActiveNum":2,
       "nexthops":[
         {
           "flags":3,
           "fib":true,
           "afi":"ipv6",
           "interfaceName":"eth0",
+          "active":true,
+          "weight":1
+        },
+        {
+          "flags":3,
+          "fib":true,
+          "afi":"ipv6",
+          "interfaceName":"eth1",
           "active":true,
           "weight":1
         }
@@ -143,13 +155,13 @@
     {
       "prefix":"2001:db8:3:3::/64",
       "prefixLen":64,
-      "protocol":"isis",
+      "protocol":"connected",
       "vrfId":0,
       "vrfName":"default",
       "selected":true,
       "destSelected":true,
-      "distance":115,
-      "metric":20,
+      "distance":0,
+      "metric":0,
       "installed":true,
       "table":254,
       "internalStatus":16,
@@ -160,10 +172,9 @@
         {
           "flags":3,
           "fib":true,
-          "afi":"ipv6",
-          "interfaceName":"eth1",
-          "active":true,
-          "weight":1
+          "directlyConnected":true,
+          "interfaceName":"eth2",
+          "active":true
         }
       ]
     }
@@ -172,13 +183,13 @@
     {
       "prefix":"2001:db8:3:4::/64",
       "prefixLen":64,
-      "protocol":"isis",
+      "protocol":"connected",
       "vrfId":0,
       "vrfName":"default",
       "selected":true,
       "destSelected":true,
-      "distance":115,
-      "metric":20,
+      "distance":0,
+      "metric":0,
       "installed":true,
       "table":254,
       "internalStatus":16,
@@ -189,10 +200,9 @@
         {
           "flags":3,
           "fib":true,
-          "afi":"ipv6",
-          "interfaceName":"eth1",
-          "active":true,
-          "weight":1
+          "directlyConnected":true,
+          "interfaceName":"eth0",
+          "active":true
         }
       ]
     }
@@ -207,13 +217,13 @@
       "selected":true,
       "destSelected":true,
       "distance":115,
-      "metric":30,
+      "metric":20,
       "installed":true,
       "table":254,
       "internalStatus":16,
       "internalFlags":8,
-      "internalNextHopNum":2,
-      "internalNextHopActiveNum":2,
+      "internalNextHopNum":1,
+      "internalNextHopActiveNum":1,
       "nexthops":[
         {
           "flags":3,
@@ -222,21 +232,13 @@
           "interfaceName":"eth0",
           "active":true,
           "weight":1
-        },
-        {
-          "flags":3,
-          "fib":true,
-          "afi":"ipv6",
-          "interfaceName":"eth1",
-          "active":true,
-          "weight":1
         }
       ]
     }
   ],
-  "2001:db8:f:1::100/128":[
+  "2001:db8:f:3::100/128":[
     {
-      "prefix":"2001:db8:f:1::100/128",
+      "prefix":"2001:db8:f:3::100/128",
       "prefixLen":128,
       "protocol":"bgp",
       "vrfId":0,
@@ -256,7 +258,6 @@
           "flags":3,
           "fib":true,
           "directlyConnected":true,
-          "interfaceIndex":2,
           "interfaceName":"eth2",
           "active":true,
           "weight":1,
@@ -270,9 +271,9 @@
       ]
     }
   ],
-  "2001:db8:f:1::200/128":[
+  "2001:db8:f:3::200/128":[
     {
-      "prefix":"2001:db8:f:1::200/128",
+      "prefix":"2001:db8:f:3::200/128",
       "prefixLen":128,
       "protocol":"bgp",
       "vrfId":0,
@@ -292,7 +293,6 @@
           "flags":3,
           "fib":true,
           "directlyConnected":true,
-          "interfaceIndex":2,
           "interfaceName":"eth2",
           "active":true,
           "weight":1,
@@ -306,9 +306,9 @@
       ]
     }
   ],
-  "2001:db8:f:1::300/128":[
+  "2001:db8:f:3::300/128":[
     {
-      "prefix":"2001:db8:f:1::300/128",
+      "prefix":"2001:db8:f:3::300/128",
       "prefixLen":128,
       "protocol":"bgp",
       "vrfId":0,
@@ -361,7 +361,7 @@
           "flags":3,
           "fib":true,
           "directlyConnected":true,
-          "interfaceName":"eth1",
+          "interfaceName":"eth0",
           "active":true
         }
       ]
@@ -385,7 +385,7 @@
           "flags":3,
           "fib":true,
           "directlyConnected":true,
-          "interfaceName":"eth0",
+          "interfaceName":"eth1",
           "active":true
         }
       ]

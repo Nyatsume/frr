@@ -192,6 +192,9 @@ def test_rib():
 #	)
    # check("r1", "show isis seg srv6 json", "r1/sid.json")
     check("r1", "show ipv6 route json", "r1/route.json")
+    check("r2", "show ipv6 route json", "r2/route.json")
+    check("r3", "show ipv6 route json", "r3/route.json")
+    check("r4", "show ipv6 route json", "r4/route.json")
 
 
 if __name__ == "__main__":
