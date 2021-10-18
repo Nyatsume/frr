@@ -148,8 +148,6 @@ static void dump_srv6_segment_end_x(struct isis_srv6_sid_end_x *s)
 	char b[256];
 
 	marker_debug_msg("=======");
-//	marker_debug_fmsg("type:              %u", s->type);
-//	marker_debug_fmsg("length:            %u", s->length);
 	marker_debug_fmsg("flags:             0x%02x", s->flags);
 	marker_debug_fmsg("algorithm:         0x%02x", s->algorithm);
 	marker_debug_fmsg("weight:            0x%02x", s->weight);
@@ -326,15 +324,6 @@ struct isis_ext_subtlvs *isis_alloc_ext_subtlvs(void)
 
 	return ext;
 }
-/* TODO(nyatsume)
-struct isis_ext_subsubtlvs *isis_alloc_ext_subsubtlvs(void)
-{
-	struct isis_ext_subsubtlvs *ext;
-
-	ext = XCALLOC(MTYPE_ISIS_SUBSUBTLV, sizeof(struct isis_ext_subsubtlvs));
-
-}
-*/
 
 /*
  * mtid parameter is used to determine if Adjacency is related to IPv4 or IPv6.
@@ -744,8 +733,6 @@ static int pack_item_ext_subtlvs(struct isis_ext_subtlvs *exts,
 			 adj; adj = adj->next) {
 			
 			struct isis_srv6_sid_end_x adj_segment;
-//			adj_segment.type = 43;
-//			adj_segment.length = 22;
 			adj_segment.flags = 0x00;
 			adj_segment.algorithm = 22;
 			adj_segment.weight = 22;
@@ -1042,8 +1029,6 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 					sizeof(struct isis_srv6_sid_end_x));
 				srv6_adj_sid = XCALLOC(MTYPE_ISIS_SUBTLV, sizeof(*srv6_adj_sid));
 
-//				adj->type = stream_getc(s);
-//				adj->length = stream_getc(s);
 				adj->flags = stream_getc(s);
 				adj->algorithm = stream_getc(s);
 				adj->weight = stream_getc(s);
@@ -1055,9 +1040,6 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 
 				uint8_t subsubtlvs_len = stream_getc(s);
 				(void) subsubtlvs_len;
-//				append_item(&exts->srv6_adj_sid,
-//					(struct isis_item *)adj);
-//				SET_SUBTLV(exts, EXT_SRV6_ADJ_SID);
 				isis_tlvs_add_srv6_adj_sid(exts, srv6_adj_sid);
 			}
 			break;

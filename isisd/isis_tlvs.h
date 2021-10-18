@@ -244,8 +244,6 @@ struct isis_srv6_sid_end_x;
 struct isis_srv6_sid_end_x {
 	struct isis_srv6_sid_end_x *next;
 
-//	uint8_t type;
-//	uint8_t length;
 	uint8_t flags;
 	uint8_t algorithm;
 	uint8_t weight;
@@ -634,13 +632,6 @@ struct isis_srv6_loc_subtlvs {
 	struct isis_srv6_sid_end sid_end;
 	struct isis_srv6_sid_structure sid_structure;
 };
-
-/* TODO(nyatsume)
-struct isis_ext_subsubtlvs {
-	uint32_t status;
-	struct isis_srv6_sid_structure sid_str;
-};
-*/
 
 #define IS_COMPAT_MT_TLV(tlv_type)                                             \
 	((tlv_type == ISIS_TLV_MT_REACH) || (tlv_type == ISIS_TLV_MT_IP_REACH) \

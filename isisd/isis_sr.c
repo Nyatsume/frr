@@ -1074,62 +1074,6 @@ DEFUN(show_sr_node, show_sr_node_cmd,
 	return CMD_SUCCESS;
 }
 
-#if 0
-static void sid_register(struct isis *isis, const struct in6_addr *sid,
-			 const char *locator_name)
-{
-	struct isis_srv6_function *func;
-	func = XCALLOC(MTYPE_ISIS_SRV6_FUNCTION,
-		       sizeof(struct isis_srv6_function));
-	snprintf(func->locator_name, sizeof(func->locator_name),
-		 "%s", locator_name);
-	listnode_add(isis->srv6_functions, func);
-}
-#endif
-
-
-# if 0
-static bool alloc_new_sid(struct isis *isis, uint32_t index,
-			  struct in6_addr *sid)
-{
-	struct listnode *node;
-	struct prefix_ipv6 *chunk;
-	struct in6_addr sid_buf;
-	bool alloced = false;
-
-	if (!isis || !sid)
-		return false;
-
-	for (ALL_LIST_ELEMENTS_RO(isis->srv6_locator_chunks, node, chunk)) {
-		sid_buf = chunk->prefix;
-		if (index != 0) {
-			sid_buf.s6_addr[15] = index;
-//			if (sid_exist(isis, &sid_buf))
-//				return false;
-			alloced = true;
-			break;
-		}
-
-		for (size_t i = 1; i < 255; i++) {
-			sid_buf.s6_addr[15] = (i & 0xff00) >> 8;
-			sid_buf.s6_addr[14] = (i & 0x00ff);
-
-//			if (sid_exist(isis, &sid_buf))
-//				continue;
-			alloced = true;
-			break;
-		}
-	}
-
-	if (!alloced)
-		return false;
-
-	sid_register(isis, &sid_buf, isis->srv6_locator_name);
-	*sid = sid_buf;
-	return true;
-}
-#endif
-
 void isis_srv6_locator_add(struct isis_srv6_locator *locator, struct isis_area *area)
 {
 	struct isis_srv6_locator *tmp;

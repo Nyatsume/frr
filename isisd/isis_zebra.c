@@ -974,9 +974,6 @@ static void dump_srv6_chunks(struct list *cs)
 static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 {
 	struct stream *s = NULL;
-//	struct isis *isis;
-//	struct listnode *node;
-//	struct prefix_ipv6 *c;
 	struct srv6_locator_chunk s6c = {};
 	struct prefix_ipv6 *chunk = NULL;
 	int i;
