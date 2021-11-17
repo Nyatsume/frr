@@ -135,6 +135,7 @@ static void srv6_adj_sid_add(struct isis_adjacency *adj)
 	struct isis_srv6_adj_sid *srv6_adj_sid;
 	struct isis_circuit *circuit = adj->circuit;
 
+	marker_debug_msg("call");
 	if (circuit->ext == NULL)
 		circuit->ext = isis_alloc_ext_subtlvs();
 
@@ -169,10 +170,10 @@ static void srv6_adj_sid_del(struct isis_adjacency *adj)
 
 	srv6_adj_sid->sid = sid;
 	marker_debug_msg("call");
+	isis_tlvs_del_srv6_adj_sid(circuit->ext, srv6_adj_sid);
  	zclient_send_localsid(zclient,
  		&sid,
  		2, ZEBRA_SEG6_LOCAL_ACTION_UNSPEC, NULL);
-	isis_tlvs_del_srv6_adj_sid(circuit->ext, srv6_adj_sid);
 }
 
 int srv6_adj_ip_enabled(struct isis_adjacency *adj, int family)

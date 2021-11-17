@@ -48,6 +48,8 @@
 #include "isisd/isis_tlvs.h"
 #include "isisd/fabricd.h"
 #include "isisd/isis_nb.h"
+#include "isisd/isis_zebra.h"
+
 
 DEFINE_MTYPE_STATIC(ISISD, ISIS_ADJACENCY, "ISIS adjacency");
 DEFINE_MTYPE(ISISD, ISIS_ADJACENCY_INFO, "ISIS adjacency info");
@@ -151,12 +153,29 @@ struct isis_adjacency *isis_adj_find(const struct isis_area *area, int level,
 
 DEFINE_HOOK(isis_adj_state_change_hook, (struct isis_adjacency *adj), (adj));
 
+static void srv6_adj_sid_del(struct isis_adjacency *adj)
+{
+	// TODO(nyatsume)
+	struct in6_addr sid = adj->srv6_adj_sid;
+	struct isis_srv6_adj_sid *srv6_adj_sid = NULL;
+	struct isis_circuit *circuit = adj->circuit;
+
+	srv6_adj_sid->sid = sid;
+	marker_debug_msg("call");
+	isis_tlvs_del_srv6_adj_sid(circuit->ext, srv6_adj_sid);
+ 	zclient_send_localsid(zclient,
+ 		&sid,
+ 		2, ZEBRA_SEG6_LOCAL_ACTION_UNSPEC, NULL);
+}
+
 void isis_delete_adj(void *arg)
 {
 	struct isis_adjacency *adj = arg;
+	marker_debug_msg("call");
 
 	if (!adj)
 		return;
+
 	/* Remove self from snmp list without walking the list*/
 	list_delete_node(adj->circuit->snmp_adj_list, adj->snmp_list_node);
 
@@ -175,6 +194,9 @@ void isis_delete_adj(void *arg)
 
 	listnode_delete(adj->circuit->area->adjacency_list, adj);
 	XFREE(MTYPE_ISIS_ADJACENCY, adj);
+	marker_debug_msg("call");
+	//ToDo(nyatsume)
+	//srv6_adj_sid_del(adj);
 	return;
 }
 
