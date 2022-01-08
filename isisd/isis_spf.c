@@ -995,72 +995,97 @@ lspfragloop:
 
 	if (!pseudo_lsp && spftree->family == AF_INET6) {
 		struct isis_item_list *ipv6_reachs;
-		if (spftree->mtid == ISIS_MT_IPV4_UNICAST)
-			ipv6_reachs = &lsp->tlvs->ipv6_reach;
-		else
-			ipv6_reachs = isis_lookup_mt_items(
-				&lsp->tlvs->mt_ipv6_reach, spftree->mtid);
-
-		struct isis_ipv6_reach *r;
-		for (r = ipv6_reachs
-				 ? (struct isis_ipv6_reach *)ipv6_reachs->head
-				 : NULL;
-		     r; r = r->next) {
-			dist = cost + r->metric;
-			vtype = r->external ? VTYPE_IP6REACH_EXTERNAL
-					    : VTYPE_IP6REACH_INTERNAL;
-			memset(&ip_info, 0, sizeof(ip_info));
-			ip_info.dest.family = AF_INET6;
-			ip_info.dest.u.prefix6 = r->prefix.prefix;
-			ip_info.dest.prefixlen = r->prefix.prefixlen;
-
-			if (r->subtlvs
-			    && r->subtlvs->source_prefix
-			    && r->subtlvs->source_prefix->prefixlen) {
-				if (spftree->tree_id != SPFTREE_DSTSRC) {
-					char buff[VID2STR_BUFFER];
-					zlog_warn("Ignoring dest-src route %s in non dest-src topology",
-						srcdest2str(
-							&ip_info.dest,
-							r->subtlvs->source_prefix,
-							buff, sizeof(buff)
-						)
-					);
-					continue;
-				}
-				ip_info.src = *r->subtlvs->source_prefix;
-			}
-
-			/* Parse list of Prefix-SID subTLVs */
-			has_valid_psid = false;
-			if (r->subtlvs) {
-				for (struct isis_item *i =
-					     r->subtlvs->prefix_sids.head;
-				     i; i = i->next) {
-					struct isis_prefix_sid *psid =
-						(struct isis_prefix_sid *)i;
-
-					if (psid->algorithm != SR_ALGORITHM_SPF)
-						continue;
-
-					has_valid_psid = true;
-					process_N(spftree, vtype, &ip_info,
-						  dist, depth + 1, psid,
-						  parent);
-					/*
-					 * Stop the Prefix-SID iteration since
-					 * we only support the SPF algorithm for
-					 * now.
-					 */
-					break;
-				}
-			}
-			if (!has_valid_psid)
+		struct isis_item_list *srv6_locator = &lsp->tlvs->srv6_locator_info;
+		struct isis_srv6_locator_info *l;
+		if (srv6_locator) {
+			for (l = (struct isis_srv6_locator_info *)
+					 srv6_locator->head;
+			     l; l = l->next) {
+				dist = cost + l->metric;
+				vtype = VTYPE_IP6REACH_INTERNAL;
+				memset(&ip_info, 0, sizeof(ip_info));
+				ip_info.dest.family = AF_INET6;
+				ip_info.dest.u.prefix6 = l->locator;
+				ip_info.dest.prefixlen = l->loc_size;
 				process_N(spftree, vtype, &ip_info, dist,
 					  depth + 1, NULL, parent);
+			}
 		}
-	}
+			if (spftree->mtid == ISIS_MT_IPV4_UNICAST)
+				ipv6_reachs = &lsp->tlvs->ipv6_reach;
+			else
+				ipv6_reachs = isis_lookup_mt_items(
+					&lsp->tlvs->mt_ipv6_reach,
+					spftree->mtid);
 
+			struct isis_ipv6_reach *r;
+			for (r = ipv6_reachs ? (struct isis_ipv6_reach *)
+						       ipv6_reachs->head
+					     : NULL;
+			     r; r = r->next) {
+				dist = cost + r->metric;
+				vtype = r->external ? VTYPE_IP6REACH_EXTERNAL
+						    : VTYPE_IP6REACH_INTERNAL;
+				memset(&ip_info, 0, sizeof(ip_info));
+				ip_info.dest.family = AF_INET6;
+				ip_info.dest.u.prefix6 = r->prefix.prefix;
+				ip_info.dest.prefixlen = r->prefix.prefixlen;
+
+				if (r->subtlvs && r->subtlvs->source_prefix
+				    && r->subtlvs->source_prefix->prefixlen) {
+					if (spftree->tree_id
+					    != SPFTREE_DSTSRC) {
+						char buff[VID2STR_BUFFER];
+						zlog_warn(
+							"Ignoring dest-src route %s in non dest-src topology",
+							srcdest2str(
+								&ip_info.dest,
+								r->subtlvs
+									->source_prefix,
+								buff,
+								sizeof(buff)));
+						continue;
+					}
+					ip_info.src =
+						*r->subtlvs->source_prefix;
+				}
+
+				/* Parse list of Prefix-SID subTLVs */
+				has_valid_psid = false;
+				if (r->subtlvs) {
+					for (struct isis_item *i =
+						     r->subtlvs->prefix_sids
+							     .head;
+					     i; i = i->next) {
+						struct isis_prefix_sid *psid =
+							(struct isis_prefix_sid
+								 *)i;
+
+						if (psid->algorithm
+						    != SR_ALGORITHM_SPF)
+							continue;
+
+						has_valid_psid = true;
+						process_N(spftree, vtype,
+							  &ip_info, dist,
+							  depth + 1, psid,
+							  parent);
+						/*
+						 * Stop the Prefix-SID iteration
+						 * since we only support the SPF
+						 * algorithm for now.
+						 */
+						break;
+					}
+				}
+				if (!has_valid_psid)
+					process_N(spftree, vtype, &ip_info,
+						  dist, depth + 1, NULL,
+						  parent);
+			}
+		}
+// ToDo:nyatsume
+	
 end:
 
 	/* if attach bit set in LSP, attached-bit receive ignore is
