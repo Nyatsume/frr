@@ -1102,6 +1102,12 @@ const struct frr_yang_module_info frr_isisd_info = {
 			}
 		},
 		{
+			.xpath = "/frr-interface:lib/interface/state/frr-isisd:isis/adjacencies/adjacency/srv6-adjacency-sid",
+			.cbs = {
+				.get_elem = lib_interface_state_isis_adjacencies_adjacency_srv6_adjacency_sid_get_elem,
+			}
+		},
+		{
 			.xpath = "/frr-interface:lib/interface/state/frr-isisd:isis/event-counters/adjacency-changes",
 			.cbs = {
 				.get_elem = lib_interface_state_isis_event_counters_adjacency_changes_get_elem,

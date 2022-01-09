@@ -369,6 +369,8 @@ lib_interface_state_isis_adjacencies_adjacency_neighbor_priority_get_elem(
 	struct nb_cb_get_elem_args *args);
 struct yang_data *lib_interface_state_isis_adjacencies_adjacency_state_get_elem(
 	struct nb_cb_get_elem_args *args);
+struct yang_data *lib_interface_state_isis_adjacencies_adjacency_srv6_adjacency_sid_get_elem (
+	struct nb_cb_get_elem_args *args);
 struct yang_data *
 lib_interface_state_isis_event_counters_adjacency_changes_get_elem(
 	struct nb_cb_get_elem_args *args);

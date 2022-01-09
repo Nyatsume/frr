@@ -866,7 +866,6 @@ module frr-isisd {
              received hello PDUs and the elapsed
              time since receipt.";
         }
-
         leaf neighbor-priority {
           type uint8 {
             range "0 .. 127";
@@ -880,6 +879,11 @@ module frr-isisd {
           type adj-state-type;
           description
             "This leaf describes the state of the interface.";
+        }
+        // ToDo: nyatsume
+        leaf srv6-adjacency-sid {
+          type inet:ipv6-address;
+          description "srv6 adj-sid"; 
         }
       }
     }
