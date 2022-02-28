@@ -52,6 +52,7 @@
 #include "isisd/isis_ldp_sync.h"
 #include "isisd/isis_dr.h"
 #include "isisd/isis_sr.h"
+#include "isisd/isis_srv6.h"
 #include "isisd/isis_zebra.h"
 
 DEFINE_MTYPE_STATIC(ISISD, ISIS_MPLS_TE,    "ISIS MPLS_TE parameters");

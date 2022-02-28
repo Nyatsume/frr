@@ -83,7 +83,7 @@ DEFPY_YANG_NOSH(segment_routing_srv6, segment_routing_srv6_cmd,
 	snprintf(xpath, sizeof(xpath), "%s/segment-routing/srv6",
 		 VTY_CURR_XPATH);
     nb_cli_enqueue_change(vty, ".", NB_OP_CREATE, NULL);
-	nb_cli_enqueue_change(vty, "./enabled", NB_OP_MODIFY,true);
+	nb_cli_enqueue_change(vty, "./enabled", NB_OP_MODIFY, "true");
 	ret = nb_cli_apply_changes(vty, "./segment-routing/srv6");
 	if (ret == CMD_SUCCESS)
 		VTY_PUSH_XPATH(ISIS_SRV6_NODE, xpath);
@@ -106,7 +106,7 @@ DEFPY_YANG(no_segment_routing_srv6, no_segment_routing_srv6_cmd,
 		return CMD_ERR_NOTHING_TODO;
 	}
 
-	nb_cli_enqueue_change(vty, "./enabled", NB_OP_MODIFY, false);
+	nb_cli_enqueue_change(vty, "./enabled", NB_OP_MODIFY, "false");
 	nb_cli_enqueue_change(vty, ".", NB_OP_DESTROY, NULL);
 	return nb_cli_apply_changes_clear_pending(vty, base_xpath);
 }
