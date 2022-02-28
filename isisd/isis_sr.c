@@ -1339,9 +1339,11 @@ void isis_sr_term(void)
 
 void isis_srv6_init(void)
 {
+	hook_register(isis_adj_state_change_hook, srv6_adj_state_change);
 	hook_register(isis_adj_ip_enabled_hook, srv6_adj_ip_enabled);
 	hook_register(isis_adj_ip_disabled_hook, srv6_adj_ip_disabled);
 }
 void isis_srv6_term(void)
 {
+	hook_unregister(isis_adj_state_change_hook, srv6_adj_state_change);
 }

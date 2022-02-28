@@ -198,6 +198,7 @@ struct isis_sr_db {
 	} config;
 };
 
+
 /* Prototypes. */
 extern struct isis_sr_block *isis_sr_find_srgb(struct lspdb_head *lspdb,
 					       const uint8_t *sysid);

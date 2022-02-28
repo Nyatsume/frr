@@ -134,6 +134,7 @@ static void srv6_adj_sid_add(struct isis_adjacency *adj)
 	struct in6_addr sid;
 	struct isis_srv6_adj_sid *srv6_adj_sid;
 	struct isis_circuit *circuit = adj->circuit;
+	struct srv6_adjacency *srv6a;
 
 	marker_debug_msg("call");
 	if (circuit->ext == NULL)
@@ -176,12 +177,25 @@ static void srv6_adj_sid_del(struct isis_adjacency *adj)
  		2, ZEBRA_SEG6_LOCAL_ACTION_UNSPEC, NULL);
 }
 
+int srv6_adj_state_change(struct isis_adjacency *adj) 
+{
+	if (!adj->circuit->area->srv6db.enabled) {
+		marker_debug_msg("sid_del skipped");
+		return 0;
+	}
+	if (adj->adj_state == ISIS_ADJ_UP)
+		return 0;
+	srv6_adj_sid_del(adj);
+	marker_debug_msg("call");
+
+	return 0;
+}
+
 int srv6_adj_ip_enabled(struct isis_adjacency *adj, int family)
 {
-/* TODO
-	if (!adj->circuit->area->srdb.enabled)
+	if (!adj->circuit->area->srv6db.enabled)
 		return 0;
-*/
+
 	srv6_adj_sid_add(adj);
 	marker_debug_msg("call");
 

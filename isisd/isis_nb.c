@@ -577,6 +577,12 @@ const struct frr_yang_module_info frr_isisd_info = {
 			.priority = NB_DFLT_PRIORITY - 1,
 		},
 		{
+			.xpath = "/frr-isisd:isis/instance/segment-routing/srv6/enabled",
+			.cbs = {
+				.modify = isis_instance_sr_srv6_enabled_modify,
+			},
+		},
+		{
 			.xpath = "/frr-isisd:isis/instance/segment-routing/srv6/locator",
 			.cbs = {
 				.cli_show = cli_show_isis_sr_srv6_locator,

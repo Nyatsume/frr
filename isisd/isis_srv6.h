@@ -36,4 +36,12 @@ struct srv6_adjacency {
 	struct in6_addr adj_addr;
 };
 
+struct isis_srv6_db {
+	bool enabled;
+	struct list *adj_sids;
+	struct {
+		bool enabled;
+	} config;
+};
+
 #endif /* _FRR_ISIS_SRV6_H */

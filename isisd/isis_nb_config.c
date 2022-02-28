@@ -1945,7 +1945,33 @@ int isis_instance_sr_srv6_destroy(struct nb_cb_destroy_args *args)
 	marker_debug_msg("call");
 	return NB_OK;
 }
+/*
+ * XPath: /frr-isisd:isis/instance/segment-routing/srv6/enabled
+ */
+int isis_instance_sr_srv6_enabled_modify(struct nb_cb_modify_args *args)
+{
+	marker_debug_msg("call");
+	struct isis_area *area;
 
+	if (args->event != NB_EV_APPLY)
+		return NB_OK;
+
+	area = nb_running_get_entry(args->dnode, NULL, true);
+	area->srv6db.config.enabled = yang_dnode_get_bool(args->dnode, NULL);
+
+	if (area->srv6db.config.enabled) {
+		marker_debug_msg("SRv6: OFF -> ON");
+
+		isis_srv6_start(area);
+	} else {
+		marker_debug_msg("SRv6: ON -> OFF");
+
+		isis_srv6_stop(area);
+	}
+
+	return NB_OK;
+
+}
 /*
  * XPath: /frr-isisd:isis/instance/segment-routing/srv6/locator
  */

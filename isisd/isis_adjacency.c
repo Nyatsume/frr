@@ -153,21 +153,6 @@ struct isis_adjacency *isis_adj_find(const struct isis_area *area, int level,
 
 DEFINE_HOOK(isis_adj_state_change_hook, (struct isis_adjacency *adj), (adj));
 
-static void srv6_adj_sid_del(struct isis_adjacency *adj)
-{
-	// TODO(nyatsume)
-	struct in6_addr sid = adj->srv6_adj_sid;
-	struct isis_srv6_adj_sid *srv6_adj_sid = NULL;
-	struct isis_circuit *circuit = adj->circuit;
-
-	srv6_adj_sid->sid = sid;
-	marker_debug_msg("call");
-	isis_tlvs_del_srv6_adj_sid(circuit->ext, srv6_adj_sid);
- 	zclient_send_localsid(zclient,
- 		&sid,
- 		2, ZEBRA_SEG6_LOCAL_ACTION_UNSPEC, NULL);
-}
-
 void isis_delete_adj(void *arg)
 {
 	struct isis_adjacency *adj = arg;
