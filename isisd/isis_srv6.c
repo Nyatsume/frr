@@ -45,6 +45,7 @@
 #include "isisd/isis_route.h"
 #include "isisd/isis_mt.h"
 #include "isisd/isis_sr.h"
+#include "isisd/isis_srv6.h"
 #include "isisd/isis_tlvs.h"
 #include "isisd/isis_misc.h"
 #include "isisd/isis_zebra.h"
@@ -63,9 +64,10 @@ int isis_srv6_start(struct isis_area *area)
     area->srv6db.enabled = true;
 
     //lsp_regenerate_schedule(area, area->is_type, 0);
+    return 0;
 }
 
-int isis_srv6_stop(struct isis_area *area)
+void isis_srv6_stop(struct isis_area *area)
 {
     struct isis_srv6_db *srv6db = &area->srv6db;
     struct isis_adjacency *adj;

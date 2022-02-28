@@ -44,4 +44,7 @@ struct isis_srv6_db {
 	} config;
 };
 
+extern int isis_srv6_start(struct isis_area *area);
+extern void isis_srv6_stop(struct isis_area *area);
+
 #endif /* _FRR_ISIS_SRV6_H */
