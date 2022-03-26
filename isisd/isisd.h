@@ -319,6 +319,7 @@ void show_isis_database_lspdb(struct vty *vty, struct isis_area *area,
 /* YANG paths */
 #define ISIS_INSTANCE	"/frr-isisd:isis/instance"
 #define ISIS_SR		"/frr-isisd:isis/instance/segment-routing"
+#define ISIS_SRV6	"/frr-isisd:isis/instance/segment-routing/srv6"
 
 /* Master of threads. */
 extern struct thread_master *master;

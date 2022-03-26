@@ -712,8 +712,7 @@ void isis_tlvs_add_srv6_locator_info(struct isis_tlvs *tlvs,
 struct isis_ext_subtlvs *isis_alloc_ext_subtlvs(void);
 void isis_tlvs_add_srv6_adj_sid(struct isis_ext_subtlvs *exts,
 			   struct isis_srv6_adj_sid *adj);
-void isis_tlvs_del_srv6_adj_sid(struct isis_ext_subtlvs *exts,
-			   struct isis_srv6_adj_sid *adj);
+void isis_tlvs_del_srv6_adj_sid(struct isis_ext_subtlvs *exts);
 void isis_tlvs_add_adj_sid(struct isis_ext_subtlvs *exts,
 			   struct isis_adj_sid *adj);
 void isis_tlvs_del_adj_sid(struct isis_ext_subtlvs *exts,

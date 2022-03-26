@@ -62,6 +62,7 @@
 #include "isisd/isis_te.h"
 #include "isisd/isis_mt.h"
 #include "isisd/isis_sr.h"
+#include "isisd/isis_srv6.h"
 #include "isisd/fabricd.h"
 #include "isisd/isis_nb.h"
 
@@ -317,6 +318,7 @@ struct isis_area *isis_area_create(const char *area_tag, const char *vrf_name)
 	flags_initialize(&area->flags);
 
 	isis_sr_area_init(area);
+	isis_srv6_area_init(area);
 
 	/*
 	 * Default values
@@ -505,6 +507,7 @@ void isis_area_destroy(struct isis_area *area)
 	isis_area_verify_routes(area);
 
 	isis_sr_area_term(area);
+	isis_srv6_area_term(area);
 
 	spftree_area_del(area);
 

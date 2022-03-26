@@ -32,8 +32,9 @@
 
 /* Segment Routing Adjacency. */
 
-bool alloc_new_sid(uint32_t index, struct in6_addr *sid);
+extern bool alloc_new_sid(uint32_t index, struct in6_addr *sid);
 
+//extern void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS);
 extern void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS);
 extern int isis_zebra_srv6_manager_get_locator_chunk(const char *name);
 extern int srv6_adj_state_change(struct isis_adjacency *adj);
@@ -70,5 +71,24 @@ struct isis_srv6_db {
 
 extern int isis_srv6_start(struct isis_area *area);
 extern void isis_srv6_stop(struct isis_area *area);
+extern void isis_srv6_area_init(struct isis_area *area);
+extern void isis_srv6_area_term(struct isis_area *area);
+extern void isis_srv6_init(void);
+extern void isis_srv6_term(void);
+
+struct isis_area;
+
+struct isis_srv6_locator {
+	char name[256];
+	struct prefix_ipv6 prefix;
+	uint8_t function_bits_length;
+	struct list *functions;
+};
+
+extern void isis_srv6_chunk_init(struct isis *isis);
+extern void isis_srv6_locator_add(struct isis_srv6_locator *locator, struct isis_area *area);
+extern struct isis_srv6_locator *isis_srv6_locator_lookup(const char *name, struct isis_area *area);
+extern struct isis_srv6_locator *isis_srv6_locator_lookup_zebra(const char *name, struct isis_area *area);
+extern struct isis_srv6_locator *isis_srv6_locator_alloc(const char *name);
 
 #endif /* _FRR_ISIS_SRV6_H */

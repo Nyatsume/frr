@@ -1492,6 +1492,11 @@ module frr-isisd {
           "Segment Routing global configuration.";
         container srv6 {
           description "SRv6 global configuration.";
+          leaf enabled {
+            type boolean;
+            default "false";
+            description "Enables SRv6 protocol extensions.";
+          }
           leaf locator {
             type string;
             default "default";

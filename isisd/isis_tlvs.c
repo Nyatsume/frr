@@ -5168,12 +5168,18 @@ void isis_tlvs_add_srv6_adj_sid(struct isis_ext_subtlvs *exts,
 }
 
 /* Delete IS-IS SRv6 Adjacency-SID subTLVs */
-void isis_tlvs_del_srv6_adj_sid(struct isis_ext_subtlvs *exts,
-			   struct isis_srv6_adj_sid *adj)
+void isis_tlvs_del_srv6_adj_sid(struct isis_ext_subtlvs *exts)
 {
-	delete_item(&exts->srv6_adj_sid, (struct isis_item *)adj);
-	XFREE(MTYPE_ISIS_SUBTLV, adj);
-	if (exts->srv6_adj_sid.count == 0)
+	struct isis_item *item, *next_item;
+	marker_debug_fmsg("%p", exts);
+	if (exts && exts->srv6_adj_sid.count > 0) {
+		for (item = exts->srv6_adj_sid.head; item; item = next_item) {
+			next_item = item->next;
+			delete_item(&exts->srv6_adj_sid, item);
+		}
+	}
+
+	if (exts && exts->srv6_adj_sid.count == 0)
 		UNSET_SUBTLV(exts, EXT_SRV6_ADJ_SID);
 }
 

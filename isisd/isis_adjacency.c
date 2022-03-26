@@ -301,6 +301,8 @@ void isis_adj_state_change(struct isis_adjacency **padj,
 	struct isis_circuit *circuit = adj->circuit;
 	bool del = false;
 
+	marker_debug_msg("ready to isis state change");
+
 	if (new_state == old_state)
 		return;
 
@@ -392,7 +394,7 @@ void isis_adj_state_change(struct isis_adjacency **padj,
 			}
 		}
 	}
-
+	marker_debug_msg("ready to hook call");
 	hook_call(isis_adj_state_change_hook, adj);
 
 	if (del) {

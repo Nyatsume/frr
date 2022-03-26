@@ -571,8 +571,8 @@ const struct frr_yang_module_info frr_isisd_info = {
 			.cbs = {
 				.cli_show = cli_show_isis_sr_srv6,
 				.cli_show_end = cli_show_isis_sr_srv6_end,
-				.create = isis_instance_sr_srv6_create,
-				.destroy = isis_instance_sr_srv6_destroy,
+		//		.create = isis_instance_sr_srv6_create,
+		//		.destroy = isis_instance_sr_srv6_destroy,
 			},
 			.priority = NB_DFLT_PRIORITY - 1,
 		},
