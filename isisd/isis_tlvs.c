@@ -158,6 +158,23 @@ static void dump_srv6_segment_end_x(struct isis_srv6_sid_end_x *s)
 	return;
 }
 
+static void dump_srv6_segment_lan_end_x(struct isis_srv6_sid_end_x *s)
+{
+	char b[256];
+
+	marker_debug_msg("=======");
+	marker_debug_fmsg("neighbor_id:		  %s",
+			  isis_format_id(s->neighbor_id, 6));
+	marker_debug_fmsg("flags:             0x%02x", s->flags);
+	marker_debug_fmsg("algorithm:         0x%02x", s->algorithm);
+	marker_debug_fmsg("weight:            0x%02x", s->weight);
+	marker_debug_fmsg("endpoint_behavior: 0x%04x", s->endpoint_behavior);
+	marker_debug_fmsg("sids[0]:           %s",
+			  inet_ntop(AF_INET6, &s->sids[0], b, sizeof(b)));
+	marker_debug_msg("=======");
+	return;
+}
+
 static void format_srv6_loc_subtlvs(struct isis_srv6_loc_subtlvs *subtlvs,
 				struct sbuf *buf, int indent)
 {
@@ -321,6 +338,7 @@ struct isis_ext_subtlvs *isis_alloc_ext_subtlvs(void)
 	init_item_list(&ext->adj_sid);
 	init_item_list(&ext->lan_sid);
 	init_item_list(&ext->srv6_adj_sid);
+	init_item_list(&ext->srv6_lan_sid);
 
 	return ext;
 }
@@ -556,8 +574,20 @@ static void format_item_ext_subtlvs(struct isis_ext_subtlvs *exts,
 				inet_ntop(AF_INET6, &srv6_adj->sid, b, sizeof(b));
 				sbuf_push(buf, indent, "End.X SID: %s\n", b);
 				marker_debug_fmsg("%s",b);
-
 		}
+	}
+
+	if (IS_SUBTLV(exts, EXT_SRV6_LAN_ADJ_SID)) {
+		char b[256];
+		struct isis_srv6_lan_adj_sid *srv6_lan;
+		for (srv6_lan = (struct isis_srv6_lan_adj_sid *)exts->srv6_lan_sid.head;
+				    srv6_lan;srv6_lan = srv6_lan->next) {
+						inet_ntop(AF_INET6, &srv6_lan->sid, b, sizeof(b));
+						sbuf_push(buf, indent, "LAN End.X SID: %s, Neighbor-ID: %s\n",
+							  b, isis_format_id(srv6_lan->neighbor_id, 6));
+						marker_debug_fmsg("SID: %s neigh-id: %s", b, 
+							  isis_format_id(srv6_lan->neighbor_id, 6));
+			}
 	}
 }
 
@@ -749,6 +779,34 @@ static int pack_item_ext_subtlvs(struct isis_ext_subtlvs *exts,
 			stream_putc(s, 0);
 
 			dump_srv6_segment_end_x(&adj_segment);
+		}
+	}
+
+	if (IS_SUBTLV(exts, EXT_SRV6_LAN_ADJ_SID)) {
+		struct isis_srv6_lan_adj_sid *lan;
+
+		for (lan = (struct isis_srv6_lan_adj_sid *)exts->srv6_lan_sid.head;
+			lan; lan = lan->next) {
+				
+			struct isis_srv6_sid_lan_end_x lan_adj_segment;
+			strcpy(lan_adj_segment.neighbor_id, "123456");
+			lan_adj_segment.flags = 0x00;
+			lan_adj_segment.algorithm = 22;
+			lan_adj_segment.weight = 22;
+			lan_adj_segment.endpoint_behavior = SRV6_END_BEHAVIOR_END_X;
+			lan_adj_segment.sids[0] = lan->sid;
+
+			stream_putc(s, ISIS_SUBTLV_SID_LAN_END_X);
+			stream_putc(s, ISIS_SUBTLV_SID_LAN_END_X_SIZE);
+			stream_put(s, lan_adj_segment.neighbor_id, 6);
+			stream_putc(s, lan_adj_segment.flags);
+			stream_putc(s, lan_adj_segment.algorithm);
+			stream_putc(s, lan_adj_segment.weight);
+			stream_putw(s, lan_adj_segment.endpoint_behavior);
+			stream_put(s, &lan_adj_segment.sids[0], 16);
+			stream_putc(s, 0);
+
+			dump_srv6_segment_lan_end_x(&lan_adj_segment);			
 		}
 	}
 

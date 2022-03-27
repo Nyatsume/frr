@@ -200,6 +200,13 @@ struct isis_srv6_adj_sid {
 	struct in6_addr sid;
 };
 
+struct isis_srv6_lan_adj_sid;
+struct isis_srv6_lan_adj_sid {
+	struct isis_srv6_lan_adj_sid *next;
+	struct in6_addr sid;
+	uint8_t neighbor_id[ISIS_SYS_ID_LEN]; 
+};
+
 struct isis_srv6_node_sid;
 struct isis_srv6_node_sid {
 	struct isis_srv6_node_sid *next;
@@ -251,6 +258,17 @@ struct isis_srv6_sid_end_x {
 	struct in6_addr sids[SRV6_MAX_SIDS];
 };
 
+struct isis_srv6_sid_lan_end_x;
+struct isis_srv6_sid_lan_end_x {
+	struct isis_srv6_sid_lan_end_x *next;
+
+	uint8_t neighbor_id[ISIS_SYS_ID_LEN];
+	uint8_t flags;
+	uint8_t algorithm;
+	uint8_t weight;
+	uint16_t endpoint_behavior;
+	struct in6_addr sids[SRV6_MAX_SIDS];
+};
 struct isis_srv6_sid_structure {
 	uint8_t type;
 	uint8_t length;
@@ -491,6 +509,7 @@ enum isis_tlv_type {
 	/* draft-ietf-lsr-isis-srv6-extensions */
 	ISIS_SUBTLV_SID_END = 5,
 	ISIS_SUBTLV_SID_END_X = 43,
+	ISIS_SUBTLV_SID_LAN_END_X = 44,
 
 	ISIS_SUBTLV_MAX = 40,
 
@@ -527,6 +546,7 @@ enum ext_subtlv_size {
 	/* draft-ietf-lsr-isis-srv6-extensions */
 	ISIS_SUBTLV_SID_END_SIZE = 26,
 	ISIS_SUBTLV_SID_END_X_SIZE = 22,
+	ISIS_SUBTLV_SID_LAN_END_X_SIZE = 28,
 
 	ISIS_SUBTLV_HDR_SIZE = 2,
 	ISIS_SUBTLV_DEF_SIZE = 4,
@@ -571,6 +591,7 @@ enum ext_subtlv_size {
 #define EXT_AVA_BW		0x080000
 #define EXT_USE_BW		0x100000
 #define EXT_SRV6_ADJ_SID	0x200000
+#define EXT_SRV6_LAN_ADJ_SID	0x400000
 
 #define LOC_DISABLE		0x000000
 #define LOC_SRV6_NODE_SID	0x000001
@@ -623,6 +644,7 @@ struct isis_ext_subtlvs {
 
 	/* Segment Routing IPv6 */
 	struct isis_item_list srv6_adj_sid;
+	struct isis_item_list srv6_lan_sid;
 };
 
 struct isis_srv6_loc_subtlvs {
