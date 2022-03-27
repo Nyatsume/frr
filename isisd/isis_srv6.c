@@ -146,6 +146,8 @@ static void srv6_adj_sid_add(struct isis_adjacency *adj)
 		return;
 	}
 	srv6_adj_sid->sid = sid;
+	char b[256];
+	marker_debug_fmsg("%s", inet_ntop(AF_INET6, &sid, b, sizeof(b)));
 
 	enum seg6local_action_t act;
 	struct seg6local_context ctx = {};
@@ -161,10 +163,8 @@ static void srv6_adj_sid_del(struct isis_adjacency *adj)
 {
 	// TODO(nyatsume)
 	struct in6_addr sid = adj->srv6_adj_sid;
-	struct isis_srv6_adj_sid srv6_adj_sid; // = NULL;
 	struct isis_circuit *circuit = adj->circuit;
 
-	srv6_adj_sid.sid = sid;
 	marker_debug_msg("sid deleted");
 	isis_tlvs_del_srv6_adj_sid(circuit->ext);
 	if (sid_zero(&sid)) 

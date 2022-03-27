@@ -4,7 +4,7 @@
 # test_isis_srv6_topo1.py
 # Part of NetDEF Topology Tests
 #
-# Copyright (c) 2021 by
+# Copyright (c) 2022 by
 # LINE Corporation, Naoyuki Tachibana <naoyuki.tachibana@linecorp.com>
 # LINE Corporation, Hiroki Shirokura <hiroki.shirokura@linecorp.com>
 #
