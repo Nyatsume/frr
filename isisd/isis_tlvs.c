@@ -158,7 +158,7 @@ static void dump_srv6_segment_end_x(struct isis_srv6_sid_end_x *s)
 	return;
 }
 
-static void dump_srv6_segment_lan_end_x(struct isis_srv6_sid_end_x *s)
+static void dump_srv6_segment_lan_end_x(struct isis_srv6_sid_lan_end_x *s)
 {
 	char b[256];
 
@@ -789,7 +789,10 @@ static int pack_item_ext_subtlvs(struct isis_ext_subtlvs *exts,
 			lan; lan = lan->next) {
 				
 			struct isis_srv6_sid_lan_end_x lan_adj_segment;
-			strcpy(lan_adj_segment.neighbor_id, "123456");
+			// lan_adj_segment.neighbor_id =
+			for (int x = 0; x < 6; x++)
+				lan_adj_segment.neighbor_id[x] = 0x11;
+
 			lan_adj_segment.flags = 0x00;
 			lan_adj_segment.algorithm = 22;
 			lan_adj_segment.weight = 22;
@@ -1101,7 +1104,34 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 				isis_tlvs_add_srv6_adj_sid(exts, srv6_adj_sid);
 			}
 			break;
-			
+		case ISIS_SUBTLV_SID_LAN_END_X:
+			marker_debug_msg("this is lan adj sid");
+			if (subtlv_len != ISIS_SUBTLV_SID_LAN_END_X_SIZE) {
+				sbuf_push(log, indent,
+						"TLV size does not match expected size of LAN END.X SID!\n");
+			} else {
+				struct isis_srv6_sid_lan_end_x *lan;
+				struct isis_srv6_lan_adj_sid *srv6_lan_sid;
+
+				lan = XCALLOC(MTYPE_ISIS_SUBTLV,
+					sizeof(struct isis_srv6_sid_lan_end_x));
+				srv6_lan_sid = XCALLOC(MTYPE_ISIS_SUBTLV, sizeof(*srv6_lan_sid));
+
+				stream_get(&lan->neighbor_id, s,
+						ISIS_SYS_ID_LEN);
+				lan->flags = stream_getc(s);
+				lan->algorithm = stream_getc(s);
+				lan->weight = stream_getc(s);
+				lan->endpoint_behavior = stream_getw(s);
+				stream_get(&lan->sids[0], s, 16);
+				srv6_lan_sid->sid = lan->sids[0];
+				dump_srv6_segment_lan_end_x(lan);
+
+				uint8_t subsubtlvs_len = stream_getc(s);
+				(void) subsubtlvs_len;
+				//isis_tlvs_add_srv6_lan_adj_sid(exts, srv6_lan_sid);
+			}
+			break;
 		default:
 			/* Skip unknown TLV */ 
 			stream_forward_getp(s, subtlv_len);
@@ -5239,6 +5269,30 @@ void isis_tlvs_del_srv6_adj_sid(struct isis_ext_subtlvs *exts)
 
 	if (exts && exts->srv6_adj_sid.count == 0)
 		UNSET_SUBTLV(exts, EXT_SRV6_ADJ_SID);
+}
+
+/* Add IS-IS SRv6 LAN-Adjacency-SID subTLVs */
+void isis_tlvs_add_srv6_lan_adj_sid(struct isis_ext_subtlvs *exts,
+				struct isis_srv6_lan_adj_sid *lan)
+{
+	append_item(&exts->srv6_lan_sid, (struct isis_item *)lan);
+	SET_SUBTLV(exts, EXT_SRV6_LAN_ADJ_SID);
+}
+
+/* Delete IS-IS SRv6 LAN-Adjacency-SID subTLVs */
+void isis_tlvs_del_srv6_lan_adj_sid(struct isis_ext_subtlvs *exts)
+{
+	struct isis_item *item, *next_item;
+	marker_debug_fmsg("%p", exts);
+	if (exts && exts->srv6_lan_sid.count > 0) {
+		for (item = exts->srv6_lan_sid.head; item; item = next_item) {
+			next_item = item->next;
+			delete_item(&exts->srv6_lan_sid, item);
+		}
+	}
+
+	if (exts && exts->srv6_lan_sid.count == 0)
+		UNSET_SUBTLV(exts, EXT_SRV6_LAN_ADJ_SID);
 }
 
 /* Add IS-IS SR Adjacency-SID subTLVs */

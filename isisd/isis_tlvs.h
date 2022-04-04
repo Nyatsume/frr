@@ -203,8 +203,8 @@ struct isis_srv6_adj_sid {
 struct isis_srv6_lan_adj_sid;
 struct isis_srv6_lan_adj_sid {
 	struct isis_srv6_lan_adj_sid *next;
+	uint8_t neighbor_id[ISIS_SYS_ID_LEN];
 	struct in6_addr sid;
-	uint8_t neighbor_id[ISIS_SYS_ID_LEN]; 
 };
 
 struct isis_srv6_node_sid;
@@ -294,6 +294,11 @@ struct isis_srv6_sid_structure {
 #define SR_ALGORITHM_STRICT_SPF	1
 #define SR_ALGORITHM_UNSET	255
 
+#define SRV6_ALGORITHM_COUNT  2
+#define SRV6_ALGORITHM_SPF	  0
+#define SRV6_ALGORITHM_STRICT_SPF 1
+#define SRV6_ALGORITHM_UNSET  255
+
 #define MSD_TYPE_BASE_MPLS_IMPOSITION  0x01
 #define MSD_TLV_SIZE            2
 
@@ -305,6 +310,7 @@ struct isis_router_cap {
 	struct isis_sr_block srgb;
 	struct isis_sr_block srlb;
 	uint8_t algo[SR_ALGORITHM_COUNT];
+	uint8_t srv6_algo[SRV6_ALGORITHM_COUNT];
 	/* RFC 8491 */
 	uint8_t msd;
 };
@@ -735,6 +741,9 @@ struct isis_ext_subtlvs *isis_alloc_ext_subtlvs(void);
 void isis_tlvs_add_srv6_adj_sid(struct isis_ext_subtlvs *exts,
 			   struct isis_srv6_adj_sid *adj);
 void isis_tlvs_del_srv6_adj_sid(struct isis_ext_subtlvs *exts);
+void isis_tlvs_add_srv6_lan_adj_sid(struct isis_ext_subtlvs *exts,
+				struct isis_srv6_lan_adj_sid *lan);
+void isis_tlvs_del_srv6_lan_adj_sid(struct isis_ext_subtlvs *exts);
 void isis_tlvs_add_adj_sid(struct isis_ext_subtlvs *exts,
 			   struct isis_adj_sid *adj);
 void isis_tlvs_del_adj_sid(struct isis_ext_subtlvs *exts,

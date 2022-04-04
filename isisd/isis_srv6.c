@@ -129,34 +129,60 @@ static void srv6_adj_sid_add(struct isis_adjacency *adj)
 {
 	struct in6_addr sid;
 	struct isis_srv6_adj_sid *srv6_adj_sid;
+	struct isis_srv6_lan_adj_sid *srv6_lan_sid;
 	struct isis_circuit *circuit = adj->circuit;
+	enum seg6local_action_t act;
+	struct seg6local_context ctx = {};
+	char b[256];
 
 	marker_debug_msg("call");
 	if (circuit->ext == NULL)
 		circuit->ext = isis_alloc_ext_subtlvs();
 
-	if (IS_SUBTLV(circuit->ext, EXT_SRV6_ADJ_SID))
+	if (IS_SUBTLV(circuit->ext, EXT_SRV6_ADJ_SID) || 
+			IS_SUBTLV(circuit->ext, EXT_SRV6_LAN_ADJ_SID))
 		return;
 
-	srv6_adj_sid = XCALLOC(MTYPE_ISIS_SUBTLV, sizeof(*srv6_adj_sid));
+	switch (circuit->circ_type) {
+	case CIRCUIT_T_BROADCAST:
+		srv6_lan_sid = XCALLOC(MTYPE_ISIS_SUBTLV, sizeof(*srv6_lan_sid));
+		
+		bool ret = alloc_new_sid(0, &sid);
+		if (!ret) {
+			marker_debug_msg("failed");
+			return;
+		}
+		srv6_lan_sid->sid = sid;
+		marker_debug_fmsg("%s", inet_ntop(AF_INET6, &sid, b, sizeof(b)));
 
-	bool ret = alloc_new_sid(0, &sid);
-	if (!ret) {
-		marker_debug_msg("failed");
-		return;
-	}
-	srv6_adj_sid->sid = sid;
-	char b[256];
-	marker_debug_fmsg("%s", inet_ntop(AF_INET6, &sid, b, sizeof(b)));
+		ctx.nh6 = *adj->ipv6_addresses;
+		act = ZEBRA_SEG6_LOCAL_ACTION_END_X;
+		zclient_send_localsid(zclient, &sid, 2, act, &ctx);
+		isis_tlvs_add_srv6_lan_adj_sid(circuit->ext, srv6_lan_sid);
+		break;
 
-	enum seg6local_action_t act;
-	struct seg6local_context ctx = {};
-	ctx.nh6 = *adj->ipv6_addresses;
-	act = ZEBRA_SEG6_LOCAL_ACTION_END_X;
-	zclient_send_localsid(zclient, &sid, 2, act, &ctx);
-	isis_tlvs_add_srv6_adj_sid(circuit->ext, srv6_adj_sid);
+	case CIRCUIT_T_P2P:
+		srv6_adj_sid = XCALLOC(MTYPE_ISIS_SUBTLV, sizeof(*srv6_adj_sid));
 
+		ret = alloc_new_sid(0, &sid);
+		if (!ret) {
+			marker_debug_msg("failed");
+			return;
+		}
+		srv6_adj_sid->sid = sid;
+		marker_debug_fmsg("%s", inet_ntop(AF_INET6, &sid, b, sizeof(b)));
+
+		ctx.nh6 = *adj->ipv6_addresses;
+		act = ZEBRA_SEG6_LOCAL_ACTION_END_X;
+		zclient_send_localsid(zclient, &sid, 2, act, &ctx);
+		isis_tlvs_add_srv6_adj_sid(circuit->ext, srv6_adj_sid);
+		break;
+	default:
+		flog_err(EC_LIB_DEVELOPMENT, "%s: unexpected circuit type: %u",
+			__func__, circuit->circ_type);
+		exit(1);
 	adj->srv6_adj_sid = sid;
+	}
 }
 
 static void srv6_adj_sid_del(struct isis_adjacency *adj)
@@ -166,9 +192,22 @@ static void srv6_adj_sid_del(struct isis_adjacency *adj)
 	struct isis_circuit *circuit = adj->circuit;
 
 	marker_debug_msg("sid deleted");
-	isis_tlvs_del_srv6_adj_sid(circuit->ext);
-	if (sid_zero(&sid)) 
-		return;
+	switch(circuit->circ_type){
+	case CIRCUIT_T_BROADCAST:
+		isis_tlvs_del_srv6_lan_adj_sid(circuit->ext);
+		if (sid_zero(&sid))
+			return;
+		break;
+	case CIRCUIT_T_P2P:
+		isis_tlvs_del_srv6_adj_sid(circuit->ext);
+		if (sid_zero(&sid)) 
+			return;
+		break;
+	default:
+		flog_err(EC_LIB_DEVELOPMENT, "%s: unexpected circuit type: %u",
+			__func__, circuit->circ_type);
+		exit(1);
+	}
  	zclient_send_localsid(zclient,
  		&sid,
  		2, ZEBRA_SEG6_LOCAL_ACTION_UNSPEC, NULL);
