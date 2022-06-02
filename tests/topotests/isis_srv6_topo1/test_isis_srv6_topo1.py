@@ -152,35 +152,51 @@ def setup_testcase(msg):
         pytest.skip(tgen.errors)
     return tgen
 
-def open_json_file(filename):
-    try:
-        with open(filename, "r") as f:
-            return json.load(f)
-    except IOError:
-        assert False, "Could not read file {}".format(filename)
+# def open_json_file(filename):
+#     try:
+#         with open(filename, "r") as f:
+#             return json.load(f)
+#     except IOError:
+#         assert False, "Could not read file {}".format(filename)
 
 
-def test_rib():
+def router_compare_json_output(rname, command, reference):
+    "Compare router JSON output"
+
+    logger.info('Comparing router "%s" "%s" output', rname, command)
+
     tgen = get_topogen()
-    if tgen.routers_have_failure():
-        pytest.skip(tgen.errors)
-    router = tgen.gears["r1"]
-    def _check(name, cmd, expected_file):
-        logger.info("polling")
-        tgen = get_topogen()
-        router = tgen.gears[name]
-        output = json.loads(router.vtysh_cmd(cmd))
-        print(output)
-        expected = open_json_file("{}/{}".format(CWD, expected_file))
-        print(expected)
-        return topotest.json_cmp(output, expected)
+    filename = "{}/{}/{}".format(CWD, rname, reference)
+    expected = json.loads(open(filename).read())
 
-    def check(name, cmd, expected_file):
-        logger.info('[+] check {} "{}" {}'.format(name, cmd, expected_file))
-        tgen = get_topogen()
-        func = partial(_check, name, cmd, expected_file)
-        success, result = topotest.run_and_expect(func, None, count=10, wait=0.5)
-        assert result is None, "Failed"
+    # Run test function until we get an result. Wait at most 60 seconds.
+    test_func = partial(topotest.router_json_cmp, tgen.gears[rname], command, expected)
+    _, diff = topotest.run_and_expect(test_func, None, count=120, wait=0.5)
+    assertmsg = '"{}" JSON output mismatches the expected result'.format(rname)
+    assert diff is None, assertmsg
+
+
+# def test_rib():
+#     tgen = get_topogen()
+#     if tgen.routers_have_failure():
+#         pytest.skip(tgen.errors)
+#     router = tgen.gears["r1"]
+#     def _check(name, cmd, expected_file):
+#         logger.info("polling")
+#         tgen = get_topogen()
+#         router = tgen.gears[name]
+#         output = json.loads(router.vtysh_cmd(cmd))
+#         print(output)
+#         expected = open_json_file("{}/{}".format(CWD, expected_file))
+#         print(expected)
+#         return topotest.json_cmp(output, expected)
+
+#     def check(name, cmd, expected_file):
+#         logger.info('[+] check {} "{}" {}'.format(name, cmd, expected_file))
+#         tgen = get_topogen()
+#         func = partial(_check, name, cmd, expected_file)
+#         success, result = topotest.run_and_expect(func, None, count=10, wait=0.5)
+#         assert result is None, "Failed"
 
 #    time.sleep(20)
 #    router.vtysh_cmd(
@@ -191,10 +207,48 @@ def test_rib():
 #		"""
 #	)
    # check("r1", "show isis seg srv6 json", "r1/sid.json")
-    check("r1", "show ipv6 route json", "r1/route.json")
-    check("r2", "show ipv6 route json", "r2/route.json")
-    check("r3", "show ipv6 route json", "r3/route.json")
-    check("r4", "show ipv6 route json", "r4/route.json")
+    # check("r1", "show ipv6 route json", "r1/route.json")
+    # check("r2", "show ipv6 route json", "r2/route.json")
+    # check("r3", "show ipv6 route json", "r3/route.json")
+    # check("r4", "show ipv6 route json", "r4/route.json")
+
+#
+# Step 1
+#
+# Test initial network convergence
+#
+
+def test_isis_adjacencies_step1():
+    logger.info("Test (step 1): check IS-IS adjacencies")
+    tgen = get_topogen()
+
+    if tgen.routers_have_failure():
+        pytest.skip(tgen.errors)
+
+    for rname in ["r1", "r2", "r3", "r4"]:
+        router_compare_json_output(
+            rname,
+            "show yang operational-data /frr-interface:lib isisd",
+            "step1/show_yang_interface_isis_adjacencies.ref"
+        )
+
+
+def test_rib_ipv6_step1():
+    logger.info("Test (step 1): verify IPv6(SRv6) RIB")
+    tgen = get_topogen()
+
+    if tgen.routers_have_failure():
+        pytest.skip(tgen.errors)
+
+    for rname in ["r1", "r2", "r3", "r4"]:
+        router_compare_json_output(
+            rname, "show ipv6 route isis json", "step1/show_ipv6_route.ref"
+        )
+
+
+#
+# Step 2
+    
 
 
 if __name__ == "__main__":

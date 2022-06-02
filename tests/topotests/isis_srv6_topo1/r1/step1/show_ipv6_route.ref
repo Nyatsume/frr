@@ -2,29 +2,16 @@
   "2001:db8:f:1::100/128":[
     {
       "prefix":"2001:db8:f:1::100/128",
-      "prefixLen":128,
-      "protocol":"bgp",
-      "vrfId":0,
-      "vrfName":"default",
+      "protocol":"isis",
       "selected":true,
       "destSelected":true,
-      "distance":20,
       "metric":0,
       "installed":true,
-      "table":254,
-      "internalStatus":16,
-      "internalFlags":9,
-      "internalNextHopNum":1,
-      "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
           "fib":true,
-          "directlyConnected":true,
-          "interfaceIndex":2,
           "interfaceName":"eth2",
           "active":true,
-          "weight":1,
           "seg6local":{
             "action":"End"
           },
@@ -38,29 +25,16 @@
   "2001:db8:f:1::200/128":[
     {
       "prefix":"2001:db8:f:1::200/128",
-      "prefixLen":128,
-      "protocol":"bgp",
-      "vrfId":0,
-      "vrfName":"default",
+      "protocol":"isis",
       "selected":true,
       "destSelected":true,
-      "distance":20,
       "metric":0,
       "installed":true,
-      "table":254,
-      "internalStatus":16,
-      "internalFlags":9,
-      "internalNextHopNum":1,
-      "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
           "fib":true,
-          "directlyConnected":true,
-          "interfaceIndex":2,
           "interfaceName":"eth2",
           "active":true,
-          "weight":1,
           "seg6local":{
             "action":"End.X"
           },
@@ -74,28 +48,16 @@
   "2001:db8:f:1::300/128":[
     {
       "prefix":"2001:db8:f:1::300/128",
-      "prefixLen":128,
-      "protocol":"bgp",
-      "vrfId":0,
-      "vrfName":"default",
+      "protocol":"isis",
       "selected":true,
       "destSelected":true,
-      "distance":20,
       "metric":0,
       "installed":true,
-      "table":254,
-      "internalStatus":16,
-      "internalFlags":9,
-      "internalNextHopNum":1,
-      "internalNextHopActiveNum":1,
       "nexthops":[
         {
-          "flags":3,
           "fib":true,
-          "directlyConnected":true,
           "interfaceName":"eth2",
           "active":true,
-          "weight":1,
           "seg6local":{
             "action":"End.X"
           },
