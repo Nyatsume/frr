@@ -139,6 +139,7 @@ static void srv6_adj_sid_add(struct isis_adjacency *adj)
 	if (circuit->ext == NULL)
 		circuit->ext = isis_alloc_ext_subtlvs();
 
+
 	if (IS_SUBTLV(circuit->ext, EXT_SRV6_ADJ_SID) || 
 			IS_SUBTLV(circuit->ext, EXT_SRV6_LAN_ADJ_SID))
 		return;
@@ -192,6 +193,9 @@ static void srv6_adj_sid_del(struct isis_adjacency *adj)
 	struct isis_circuit *circuit = adj->circuit;
 
 	marker_debug_msg("sid deleted");
+	isis_tlvs_del_srv6_adj_sid(circuit->ext);
+	if (sid_zero(&sid)) 
+		return;
 	switch(circuit->circ_type){
 	case CIRCUIT_T_BROADCAST:
 		isis_tlvs_del_srv6_lan_adj_sid(circuit->ext);

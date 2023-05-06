@@ -108,24 +108,20 @@ def build_topo(tgen):
     switch.add_link(tgen.gears["rt1"], nodeif="eth1")
     switch.add_link(tgen.gears["rt3"], nodeif="eth0")
 
-    switch = tgen.add_switch("s2")
-    switch.add_link(tgen.gears["rt2"], nodeif="eth1")
-    switch.add_link(tgen.gears["rt3"], nodeif="eth1")
-
     switch = tgen.add_switch("s3")
-    switch.add_link(tgen.gears["rt2"], nodeif="eth2")
+    switch.add_link(tgen.gears["rt2"], nodeif="eth1")
     switch.add_link(tgen.gears["rt4"], nodeif="eth0")
 
     switch = tgen.add_switch("s4")
-    switch.add_link(tgen.gears["rt2"], nodeif="eth3")
+    switch.add_link(tgen.gears["rt2"], nodeif="eth2")
     switch.add_link(tgen.gears["rt4"], nodeif="eth1")
 
     switch = tgen.add_switch("s5")
-    switch.add_link(tgen.gears["rt3"], nodeif="eth2")
+    switch.add_link(tgen.gears["rt3"], nodeif="eth1")
     switch.add_link(tgen.gears["rt5"], nodeif="eth0")
 
     switch = tgen.add_switch("s6")
-    switch.add_link(tgen.gears["rt3"], nodeif="eth3")
+    switch.add_link(tgen.gears["rt3"], nodeif="eth2")
     switch.add_link(tgen.gears["rt5"], nodeif="eth1")
 
     switch = tgen.add_switch("s7")

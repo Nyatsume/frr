@@ -577,6 +577,7 @@ static void format_item_ext_subtlvs(struct isis_ext_subtlvs *exts,
 		}
 	}
 
+
 	if (IS_SUBTLV(exts, EXT_SRV6_LAN_ADJ_SID)) {
 		char b[256];
 		struct isis_srv6_lan_adj_sid *srv6_lan;
@@ -589,6 +590,7 @@ static void format_item_ext_subtlvs(struct isis_ext_subtlvs *exts,
 							  isis_format_id(srv6_lan->neighbor_id, 6));
 			}
 	}
+
 }
 
 static void free_item_ext_subtlvs(struct  isis_ext_subtlvs *exts)
@@ -812,7 +814,6 @@ static int pack_item_ext_subtlvs(struct isis_ext_subtlvs *exts,
 			dump_srv6_segment_lan_end_x(&lan_adj_segment);			
 		}
 	}
-
 	return 0;
 }
 
@@ -5278,7 +5279,6 @@ void isis_tlvs_add_srv6_lan_adj_sid(struct isis_ext_subtlvs *exts,
 	append_item(&exts->srv6_lan_sid, (struct isis_item *)lan);
 	SET_SUBTLV(exts, EXT_SRV6_LAN_ADJ_SID);
 }
-
 /* Delete IS-IS SRv6 LAN-Adjacency-SID subTLVs */
 void isis_tlvs_del_srv6_lan_adj_sid(struct isis_ext_subtlvs *exts)
 {
@@ -5294,7 +5294,6 @@ void isis_tlvs_del_srv6_lan_adj_sid(struct isis_ext_subtlvs *exts)
 	if (exts && exts->srv6_lan_sid.count == 0)
 		UNSET_SUBTLV(exts, EXT_SRV6_LAN_ADJ_SID);
 }
-
 /* Add IS-IS SR Adjacency-SID subTLVs */
 void isis_tlvs_add_adj_sid(struct isis_ext_subtlvs *exts,
 			   struct isis_adj_sid *adj)
