@@ -567,6 +567,29 @@ const struct frr_yang_module_info frr_isisd_info = {
 			},
 		},
 		{
+			.xpath = "/frr-isisd:isis/instance/segment-routing/srv6",
+			.cbs = {
+				.cli_show = cli_show_isis_sr_srv6,
+				.cli_show_end = cli_show_isis_sr_srv6_end,
+		//		.create = isis_instance_sr_srv6_create,
+		//		.destroy = isis_instance_sr_srv6_destroy,
+			},
+			.priority = NB_DFLT_PRIORITY - 1,
+		},
+		{
+			.xpath = "/frr-isisd:isis/instance/segment-routing/srv6/enabled",
+			.cbs = {
+				.modify = isis_instance_sr_srv6_enabled_modify,
+			},
+		},
+		{
+			.xpath = "/frr-isisd:isis/instance/segment-routing/srv6/locator",
+			.cbs = {
+				.cli_show = cli_show_isis_sr_srv6_locator,
+				.modify = isis_instance_sr_srv6_locator_modify,
+			},
+		},
+		{
 			.xpath = "/frr-isisd:isis/instance/segment-routing/enabled",
 			.cbs = {
 				.modify = isis_instance_segment_routing_enabled_modify,
@@ -1082,6 +1105,12 @@ const struct frr_yang_module_info frr_isisd_info = {
 			.xpath = "/frr-interface:lib/interface/state/frr-isisd:isis/adjacencies/adjacency/state",
 			.cbs = {
 				.get_elem = lib_interface_state_isis_adjacencies_adjacency_state_get_elem,
+			}
+		},
+		{
+			.xpath = "/frr-interface:lib/interface/state/frr-isisd:isis/adjacencies/adjacency/srv6-adjacency-sid",
+			.cbs = {
+				.get_elem = lib_interface_state_isis_adjacencies_adjacency_srv6_adjacency_sid_get_elem,
 			}
 		},
 		{

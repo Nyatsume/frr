@@ -59,6 +59,7 @@
 #include "isisd/fabricd.h"
 #include "isisd/isis_tx_queue.h"
 #include "isisd/isis_nb.h"
+#include "isisd/isis_zebra.h"
 
 DEFINE_MTYPE_STATIC(ISISD, ISIS_LSP, "ISIS LSP");
 
@@ -1232,6 +1233,17 @@ static void lsp_build(struct isis_lsp *lsp, struct isis_area *area)
 	}
 
 	lsp_build_ext_reach(lsp, area);
+
+	if (true) {
+		struct prefix_ipv6 p;
+		p.prefix = loc_addr.address;
+		p.prefixlen = 64;
+		uint32_t metric = 0x0;
+		uint8_t flags = 0x0;
+		uint8_t algorithm = 0x0;
+		isis_tlvs_add_srv6_locator_info(lsp->tlvs, &p, metric,
+						flags, algorithm);
+	}
 
 	struct isis_tlvs *tlvs = lsp->tlvs;
 	lsp->tlvs = NULL;

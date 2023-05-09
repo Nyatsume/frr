@@ -866,7 +866,6 @@ module frr-isisd {
              received hello PDUs and the elapsed
              time since receipt.";
         }
-
         leaf neighbor-priority {
           type uint8 {
             range "0 .. 127";
@@ -880,6 +879,11 @@ module frr-isisd {
           type adj-state-type;
           description
             "This leaf describes the state of the interface.";
+        }
+        // ToDo: nyatsume
+        leaf srv6-adjacency-sid {
+          type inet:ipv6-address;
+          description "srv6 adj-sid"; 
         }
       }
     }
@@ -1486,6 +1490,19 @@ module frr-isisd {
       container segment-routing {
         description
           "Segment Routing global configuration.";
+        container srv6 {
+          description "SRv6 global configuration.";
+          leaf enabled {
+            type boolean;
+            default "false";
+            description "Enables SRv6 protocol extensions.";
+          }
+          leaf locator {
+            type string;
+            default "default";
+            description "locator name.";
+          }
+        }
         leaf enabled {
           type boolean;
           default "false";

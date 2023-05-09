@@ -502,7 +502,8 @@ def test_isis_adjacencies_step5():
     tgen.net["rt6"].cmd(
         'vtysh -c "conf t" -c "router isis 1" -c "no segment-routing on"'
     )
-
+    
+    tgen.mininet_cli()
     for rname in ["rt1", "rt2", "rt3", "rt4", "rt5", "rt6"]:
         router_compare_json_output(
             rname,

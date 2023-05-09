@@ -225,6 +225,10 @@ int lib_interface_isis_bfd_monitoring_profile_modify(
 	struct nb_cb_modify_args *args);
 int lib_interface_isis_bfd_monitoring_profile_destroy(
 	struct nb_cb_destroy_args *args);
+int isis_instance_sr_srv6_create(struct nb_cb_create_args *args);
+int isis_instance_sr_srv6_destroy(struct nb_cb_destroy_args *args);
+int isis_instance_sr_srv6_enabled_modify(struct nb_cb_modify_args *args);
+int isis_instance_sr_srv6_locator_modify(struct nb_cb_modify_args *args);
 int isis_instance_segment_routing_enabled_modify(
 	struct nb_cb_modify_args *args);
 int isis_instance_segment_routing_enabled_modify(
@@ -253,6 +257,9 @@ int isis_instance_segment_routing_prefix_sid_map_prefix_sid_last_hop_behavior_mo
 	struct nb_cb_modify_args *args);
 int isis_instance_segment_routing_prefix_sid_map_prefix_sid_n_flag_clear_modify(
 	struct nb_cb_modify_args *args);
+int isis_instance_segment_routing_srv6_locator_create(enum nb_event event, const struct lyd_node *dnode, union nb_resource *resource);
+int isis_instance_segment_routing_srv6_locator_destroy(enum nb_event event, const struct lyd_node *dnode);
+int isis_instance_segment_routing_srv6_locator_modify(struct nb_cb_modify_args *args);
 int isis_instance_mpls_ldp_sync_destroy(struct nb_cb_destroy_args *args);
 int isis_instance_mpls_ldp_sync_create(struct nb_cb_create_args *args);
 int isis_instance_mpls_ldp_sync_holddown_modify(struct nb_cb_modify_args *args);
@@ -362,6 +369,8 @@ struct yang_data *
 lib_interface_state_isis_adjacencies_adjacency_neighbor_priority_get_elem(
 	struct nb_cb_get_elem_args *args);
 struct yang_data *lib_interface_state_isis_adjacencies_adjacency_state_get_elem(
+	struct nb_cb_get_elem_args *args);
+struct yang_data *lib_interface_state_isis_adjacencies_adjacency_srv6_adjacency_sid_get_elem (
 	struct nb_cb_get_elem_args *args);
 struct yang_data *
 lib_interface_state_isis_event_counters_adjacency_changes_get_elem(
@@ -549,6 +558,10 @@ void cli_show_isis_mpls_if_ldp_sync(struct vty *vty, struct lyd_node *dnode,
 void cli_show_isis_mpls_if_ldp_sync_holddown(struct vty *vty,
 					     struct lyd_node *dnode,
 					     bool show_defaults);
+void cli_show_isis_sr_srv6_locator(struct vty *vty, struct lyd_node *dnode,
+	       				bool show_defaults);
+void cli_show_isis_sr_srv6(struct vty *vty, struct lyd_node *dnode, bool show_defaults);
+void cli_show_isis_sr_srv6_end(struct vty *vty, struct lyd_node *dnode);
 
 /* Notifications. */
 void isis_notif_db_overload(const struct isis_area *area, bool overload);

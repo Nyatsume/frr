@@ -216,6 +216,19 @@ struct yang_data *lib_interface_state_isis_adjacencies_adjacency_state_get_elem(
 
 /*
  * XPath:
+ * /frr-interface:lib/interface/state/frr-isisd:isis/adjacencies/adjacency/srv6-adjacency-sid
+ */
+
+struct yang_data *lib_interface_state_isis_adjacencies_adjacency_srv6_adjacency_sid_get_elem (
+	struct nb_cb_get_elem_args *args)
+{
+	const struct isis_adjacency *adj = args->list_entry;
+
+	return yang_data_new_ipv6(args->xpath, &adj->srv6_adj_sid);
+}
+
+/*
+ * XPath:
  * /frr-interface:lib/interface/state/frr-isisd:isis/event-counters/adjacency-changes
  */
 struct yang_data *

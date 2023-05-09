@@ -31,11 +31,13 @@
 #include "libfrr.h"
 #include "yang.h"
 #include "lib/linklist.h"
+#include "lib/srv6.h"
 #include "isisd/isisd.h"
 #include "isisd/isis_nb.h"
 #include "isisd/isis_misc.h"
 #include "isisd/isis_circuit.h"
 #include "isisd/isis_csm.h"
+#include "isisd/isis_zebra.h"
 
 #ifndef VTYSH_EXTRACT_PL
 #include "isisd/isis_cli_clippy.c"
@@ -68,6 +70,131 @@ DEFPY_YANG_NOSH(router_isis, router_isis_cmd,
 		VTY_PUSH_XPATH(ISIS_NODE, base_xpath);
 
 	return ret;
+}
+
+DEFPY_YANG_NOSH(segment_routing_srv6, segment_routing_srv6_cmd,
+		"segment-routing srv6",
+		"Segment-Routing\n"
+		"Segment-Routing IPv6\n")
+{
+	int ret;
+	char xpath[XPATH_MAXLEN];
+
+	snprintf(xpath, sizeof(xpath), "%s/segment-routing/srv6",
+		 VTY_CURR_XPATH);
+    nb_cli_enqueue_change(vty, ".", NB_OP_CREATE, NULL);
+	nb_cli_enqueue_change(vty, "./enabled", NB_OP_MODIFY, "true");
+	ret = nb_cli_apply_changes(vty, "./segment-routing/srv6");
+	if (ret == CMD_SUCCESS)
+		VTY_PUSH_XPATH(ISIS_SRV6_NODE, xpath);
+	
+	return ret;
+}
+
+DEFPY_YANG(no_segment_routing_srv6, no_segment_routing_srv6_cmd,
+	   "no segment-routing srv6",
+	   NO_STR
+	   "Segment-Routing\n"
+	   "Segment-Routing IPv6\n")
+{
+	char base_xpath[XPATH_MAXLEN];
+
+	snprintf(base_xpath, XPATH_MAXLEN, "./segment-routing/srv6");
+
+	if (!yang_dnode_existsf(vty->candidate_config->dnode, base_xpath)) {
+		vty_out(vty, "ISIS srv6 config not found.\n");
+		return CMD_ERR_NOTHING_TODO;
+	}
+
+	nb_cli_enqueue_change(vty, "./enabled", NB_OP_MODIFY, "false");
+	nb_cli_enqueue_change(vty, ".", NB_OP_DESTROY, NULL);
+	return nb_cli_apply_changes_clear_pending(vty, base_xpath);
+}
+
+DEFPY(isis_srv6_locator,
+		isis_srv6_locator_cmd,
+		"locator WORD$locname",
+		"SRv6 locator\n"
+		"SRv6 locator name\n")
+{
+	marker_debug_msg("call");
+	nb_cli_enqueue_change(vty, "./locator", NB_OP_MODIFY, locname);
+	return nb_cli_apply_changes(vty, NULL);
+}
+
+DEFPY(no_isis_srv6_locator,
+		no_isis_srv6_locator_cmd,
+		"no locator WORD$locname",
+		NO_STR
+		"SRv6 locator\n"
+		"SRv6 locator name\n")
+{
+	marker_debug_msg("call");
+	nb_cli_enqueue_change(vty, "./locator", NB_OP_MODIFY, NULL);
+	return nb_cli_apply_changes(vty, NULL);
+}
+
+static json_object *adj_segments_json_add(struct isis_srv6_adj_segment *adj_seg)
+{
+	char b[256];
+
+	json_object *adj_segments_json_per_sid = NULL;
+	adj_segments_json_per_sid = json_object_new_object();
+	json_object_string_add(adj_segments_json_per_sid, "sid", inet_ntop(AF_INET6,adj_seg->sid.s6_addr, b, 256));
+	json_object_string_add(adj_segments_json_per_sid, "peer", inet_ntop(AF_INET6, adj_seg->adj_addr.s6_addr, b, 256));
+
+	return adj_segments_json_per_sid;
+}
+
+
+DEFUN(show_srv6, show_srv6_cmd,
+		"show isis segment-routing srv6 [json]",
+		SHOW_STR PROTO_HELP
+		"Segment-Routing\n"
+		"Segment-Routing srv6\n"
+		JSON_STR)
+{
+	bool uj = use_json(argc, argv);
+	json_object *json = NULL;
+	json_object *node_segment_json = NULL;
+	json_object *adj_segments_json = NULL;
+	json_object *adj_segments_json_per_sid = NULL;
+
+	char b[256];
+
+	if (uj) {
+		json = json_object_new_object();
+		node_segment_json = json_object_new_object();
+		adj_segments_json = json_object_new_array();
+		json_object_string_add(node_segment_json, "sid", inet_ntop(AF_INET6, &node_segment.sid, b, 256));
+		json_object_object_add(json, "node_segment", node_segment_json);
+		json_object_object_add(json, "adj_segments", adj_segments_json);
+
+
+		for (int i = 0; i < SRV6_MAX_SIDS; i++) {
+			if (sid_zero(&adj_segment[i].sid))
+				continue;
+			adj_segments_json_per_sid = adj_segments_json_add(&adj_segment[i]);
+			json_object_array_add(adj_segments_json, adj_segments_json_per_sid);
+		}
+		vty_out(vty, "%s\n",
+				json_object_to_json_string_ext(
+					json, JSON_C_TO_STRING_PRETTY));
+		marker_debug_msg("call");
+		return CMD_SUCCESS;
+	}
+
+	vty_out(vty, "node-sid: %s\n",
+			inet_ntop(AF_INET6, &node_segment.sid, b, 256));
+	for (int i = 0; i < SRV6_MAX_SIDS; i++) {
+		if (sid_zero(&adj_segment[i].sid))
+			continue;
+		vty_out(vty, "adj-sid[%d]: %s\n", i,
+				inet_ntop(AF_INET6, &adj_segment[i].sid, b, 256));
+	}
+
+
+	return CMD_SUCCESS;
 }
 
 struct if_iter {
@@ -149,6 +276,26 @@ void cli_show_router_isis(struct vty *vty, struct lyd_node *dnode,
 void cli_show_router_isis_end(struct vty *vty, struct lyd_node *dnode)
 {
 	vty_out(vty, "exit\n");
+}
+
+void cli_show_isis_sr_srv6(struct vty *vty, struct lyd_node *dnode,
+			  bool show_defaults)
+{
+	marker_debug_msg("call");
+	vty_out(vty, " segment-routing srv6\n");
+}
+
+void cli_show_isis_sr_srv6_end(struct vty *vty, struct lyd_node *dnode)
+{
+	marker_debug_msg("call");
+	vty_out(vty, " exit\n");
+}
+
+void cli_show_isis_sr_srv6_locator(struct vty *vty, struct lyd_node *dnode,
+		bool show_defaults)
+{
+	marker_debug_msg("call");
+	vty_out(vty, "  locator %s\n", yang_dnode_get_string(dnode, "."));
 }
 
 /*
@@ -1495,6 +1642,7 @@ DEFPY_YANG (isis_sr_enable,
        SR_STR
        "Enable Segment Routing\n")
 {
+	marker_debug_msg("call");
 	nb_cli_enqueue_change(vty, "./segment-routing/enabled", NB_OP_MODIFY,
 			      "true");
 
@@ -1517,6 +1665,7 @@ DEFPY_YANG (no_isis_sr_enable,
 void cli_show_isis_sr_enabled(struct vty *vty, struct lyd_node *dnode,
 			      bool show_defaults)
 {
+	marker_debug_msg("call");
 	if (!yang_dnode_get_bool(dnode, NULL))
 		vty_out(vty, " no");
 
@@ -3187,6 +3336,7 @@ void isis_cli_init(void)
 
 	install_element(ISIS_NODE, &is_type_cmd);
 	install_element(ISIS_NODE, &no_is_type_cmd);
+	install_element(VIEW_NODE, &show_srv6_cmd);
 
 	install_element(ISIS_NODE, &dynamic_hostname_cmd);
 
@@ -3232,6 +3382,9 @@ void isis_cli_init(void)
 	install_element(ISIS_NODE, &isis_redistribute_cmd);
 
 	install_element(ISIS_NODE, &isis_topology_cmd);
+
+	install_element(ISIS_NODE, &segment_routing_srv6_cmd);
+	install_element(ISIS_NODE, &no_segment_routing_srv6_cmd);
 
 	install_element(ISIS_NODE, &isis_sr_enable_cmd);
 	install_element(ISIS_NODE, &no_isis_sr_enable_cmd);
@@ -3298,6 +3451,9 @@ void isis_cli_init(void)
 	install_element(INTERFACE_NODE, &isis_mpls_if_ldp_sync_cmd);
 	install_element(INTERFACE_NODE, &isis_mpls_if_ldp_sync_holddown_cmd);
 	install_element(INTERFACE_NODE, &no_isis_mpls_if_ldp_sync_holddown_cmd);
+
+	install_element(ISIS_SRV6_NODE, &isis_srv6_locator_cmd);
+	install_element(ISIS_SRV6_NODE, &no_isis_srv6_locator_cmd);
 }
 
 #endif /* ifndef FABRICD */

@@ -55,6 +55,7 @@
 #include "isisd/isis_adjacency.h"
 #include "isisd/isis_te.h"
 #include "isisd/isis_sr.h"
+#include "isisd/isis_srv6.h"
 #include "isisd/isis_ldp_sync.h"
 
 struct zclient *zclient;
@@ -800,6 +801,13 @@ static int isis_zebra_client_close_notify(ZAPI_CALLBACK_ARGS)
 	return ret;
 }
 
+#if 0
+static void node_segment_unset(void)
+{
+	return;
+}
+#endif
+
 void isis_zebra_init(struct thread_master *master, int instance)
 {
 	/* Initialize asynchronous zclient. */
@@ -830,6 +838,8 @@ void isis_zebra_init(struct thread_master *master, int instance)
 	zclient->opaque_msg_handler = isis_opaque_msg_handler;
 
 	zclient->zebra_client_close_notify = isis_zebra_client_close_notify;
+	zclient->process_srv6_locator_chunk =
+		isis_zebra_process_srv6_locator_chunk;
 }
 
 void isis_zebra_stop(void)
