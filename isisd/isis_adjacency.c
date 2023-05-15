@@ -36,6 +36,8 @@
 #include "isisd/isis_tlvs.h"
 #include "isisd/fabricd.h"
 #include "isisd/isis_nb.h"
+#include "isisd/isis_zebra.h"
+
 
 DEFINE_MTYPE_STATIC(ISISD, ISIS_ADJACENCY, "ISIS adjacency");
 DEFINE_MTYPE(ISISD, ISIS_ADJACENCY_INFO, "ISIS adjacency info");
@@ -142,9 +144,11 @@ DEFINE_HOOK(isis_adj_state_change_hook, (struct isis_adjacency *adj), (adj));
 void isis_delete_adj(void *arg)
 {
 	struct isis_adjacency *adj = arg;
+	//marker_debug_msg("call");
 
 	if (!adj)
 		return;
+
 	/* Remove self from snmp list without walking the list*/
 	list_delete_node(adj->circuit->snmp_adj_list, adj->snmp_list_node);
 
@@ -163,6 +167,9 @@ void isis_delete_adj(void *arg)
 
 	listnode_delete(adj->circuit->area->adjacency_list, adj);
 	XFREE(MTYPE_ISIS_ADJACENCY, adj);
+	//marker_debug_msg("call");
+	//ToDo(nyatsume)
+	//srv6_adj_sid_del(adj);
 	return;
 }
 
@@ -315,6 +322,8 @@ void isis_adj_state_change(struct isis_adjacency **padj,
 	struct isis_circuit *circuit = adj->circuit;
 	bool del = false;
 
+	//marker_debug_msg("ready to isis state change");
+
 	if (new_state == old_state)
 		return;
 
@@ -422,7 +431,7 @@ void isis_adj_state_change(struct isis_adjacency **padj,
 			}
 		}
 	}
-
+	//marker_debug_msg("ready to hook call");
 	hook_call(isis_adj_state_change_hook, adj);
 
 	if (del) {
@@ -868,6 +877,16 @@ void isis_adj_print_vty(struct isis_adjacency *adj, struct vty *vty,
 								 : "IPv6",
 				adj_type, backup, sid);
 		}
+
+		// TODO(slankdev): replace srv6_adj_sid with srv6_adj_sids
+		// for (ALL_LIST_ELEMENTS_RO(adj->srv6_adj_sids, anode, sra)) {
+		// }
+		if (!sid_zero(&adj->srv6_adj_sid)) {
+			char b[256];
+			inet_ntop(AF_INET6, &adj->srv6_adj_sid, b, sizeof(b));
+			vty_out(vty, "    SRv6 Adjacency-SID: %s \n", b);
+		}
+
 		vty_out(vty, "\n");
 	}
 	return;

@@ -922,9 +922,11 @@ static int process_lsp(uint8_t pdu_type, struct isis_circuit *circuit,
 	struct isis_tlvs *tlvs = NULL;
 	int retval = ISIS_WARNING;
 	const char *error_log;
+	int lsp_error = 0;
 
-	if (isis_unpack_tlvs(STREAM_READABLE(circuit->rcv_stream),
-			     circuit->rcv_stream, &tlvs, &error_log)) {
+	lsp_error = isis_unpack_tlvs(STREAM_READABLE(circuit->rcv_stream),
+			     circuit->rcv_stream, &tlvs, &error_log);
+	if (lsp_error) {
 		zlog_warn("Something went wrong unpacking the LSP: %s",
 			  error_log);
 #ifndef FABRICD
@@ -949,6 +951,10 @@ static int process_lsp(uint8_t pdu_type, struct isis_circuit *circuit,
 				     sizeof(raw_pdu), 0, 0);
 #endif /* ifndef FABRICD */
 		goto out;
+	}
+	else {
+		zlog_debug("Processing LSP successfully.");
+		zlog_debug("Unpacking LSP: %s", error_log);
 	}
 
 	/* 7.3.15.1 a) 4 - need to make sure IDLength matches */

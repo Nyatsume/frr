@@ -51,6 +51,7 @@
 #include "isisd/isis_mt.h"
 #include "isisd/isis_sr.h"
 #include "isisd/isis_flex_algo.h"
+#include "isisd/isis_srv6.h"
 #include "isisd/fabricd.h"
 #include "isisd/isis_nb.h"
 
@@ -210,6 +211,8 @@ struct isis *isis_new(const char *vrf_name)
 	isis->snmp_notifications = 1;
 	dyn_cache_init(isis);
 
+	isis->srv6_locators = list_new();
+
 	listnode_add(im->isis, isis);
 
 	return isis;
@@ -337,6 +340,7 @@ struct isis_area *isis_area_create(const char *area_tag, const char *vrf_name)
 	flags_initialize(&area->flags);
 
 	isis_sr_area_init(area);
+	isis_srv6_area_init(area);
 
 	/*
 	 * Default values
@@ -416,6 +420,8 @@ struct isis_area *isis_area_create(const char *area_tag, const char *vrf_name)
 
 	area->bfd_signalled_down = false;
 	area->bfd_force_spf_refresh = false;
+
+	area->srv6_locators = list_new();
 
 	QOBJ_REG(area, isis_area);
 
@@ -521,6 +527,7 @@ void isis_area_destroy(struct isis_area *area)
 	isis_area_verify_routes(area);
 
 	isis_sr_area_term(area);
+	isis_srv6_area_term(area);
 
 	isis_mpls_te_term(area);
 
@@ -3815,6 +3822,7 @@ struct cmd_node router_node = {
 	.prompt = "%s(config-router)# ",
 	.config_write = isis_config_write,
 };
+#endif /* ifdef FABRICD */
 
 struct cmd_node isis_flex_algo_node = {
 	.name = "isis-flex-algo",
@@ -3822,12 +3830,19 @@ struct cmd_node isis_flex_algo_node = {
 	.parent_node = ISIS_NODE,
 	.prompt = "%s(config-router-flex-algo)# ",
 };
-#endif /* ifdnef FABRICD */
+
+struct cmd_node isis_srv6_node = {
+	.name = "isis-srv6",
+	.node = ISIS_SRV6_NODE,
+	.parent_node = ISIS_NODE,
+	.prompt = "%s(config-router-srv6)# ",
+};
 
 void isis_init(void)
 {
 	/* Install IS-IS top node */
 	install_node(&router_node);
+	install_node(&isis_srv6_node);
 
 	install_element(VIEW_NODE, &show_isis_summary_cmd);
 
@@ -3917,6 +3932,7 @@ void isis_init(void)
 	install_element(CONFIG_NODE, &no_debug_isis_ldp_sync_cmd);
 
 	install_default(ROUTER_NODE);
+	install_default(ISIS_SRV6_NODE);
 
 #ifdef FABRICD
 	install_element(CONFIG_NODE, &router_openfabric_cmd);

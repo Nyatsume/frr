@@ -19,6 +19,7 @@
 #include "isisd/isis_pdu_counter.h"
 #include "isisd/isis_circuit.h"
 #include "isisd/isis_sr.h"
+#include "isisd/isis_srv6.h"
 #include "isis_flags.h"
 #include "isis_lsp.h"
 #include "isis_lfa.h"
@@ -67,7 +68,9 @@ extern struct zebra_privs_t isisd_privs;
 /* #define EXTREME_DEBUG  */
 
 struct fabricd;
-
+struct isis_srv6_function {
+	char locator_name[256];
+};
 struct isis_master {
 	/* ISIS instance. */
 	struct list *isis;
@@ -96,6 +99,11 @@ struct isis {
 	struct list *dyn_cache;
 
 	struct route_table *ext_info[REDIST_PROTOCOL_COUNT];
+	struct list *srv6_locators;
+	bool srv6_enabled;
+	char srv6_locator_name[256];
+	struct list *srv6_locator_chunks;
+	struct list *srv6_functions;
 };
 
 extern struct isis_master *im;
@@ -208,6 +216,7 @@ struct isis_area {
 	struct mpls_te_area *mta;
 	/* Segment Routing information */
 	struct isis_sr_db srdb;
+	struct isis_srv6_db srv6db;
 	int ipv6_circuits;
 	bool purge_originator;
 	/* SPF prefix priorities. */
@@ -252,6 +261,11 @@ struct isis_area {
 	uint64_t auth_failures[2];
 	uint64_t id_len_mismatches[2];
 	uint64_t lsp_error_counter[2];
+
+	/* SRv6 fields*/
+	struct list *srv6_locators;
+	struct list *srv6_locator_chunks;
+	struct list *srv6_locator_name;
 
 	QOBJ_FIELDS;
 };
@@ -339,6 +353,7 @@ void config_end_lsp_generate(struct isis_area *area);
 /* YANG paths */
 #define ISIS_INSTANCE	"/frr-isisd:isis/instance"
 #define ISIS_SR		"/frr-isisd:isis/instance/segment-routing"
+#define ISIS_SRV6	"/frr-isisd:isis/instance/segment-routing/srv6"
 
 /* Master of threads. */
 extern struct event_loop *master;

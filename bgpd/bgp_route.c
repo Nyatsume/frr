@@ -11931,6 +11931,8 @@ void route_vty_out_detail_header(struct vty *vty, struct bgp *bgp,
 			bgp_evpn_route2json((struct prefix_evpn *)p, json);
 		}
 	} else {
+		vty_out(vty, "safi: %d json: %p, prd: %p, bgp: %p, asnotation: %u\n",
+				safi, json, prd, bgp, bgp->asnotation);
 		if (!json) {
 			vty_out(vty,
 				"BGP routing table entry for %s%s%pFX, version %" PRIu64

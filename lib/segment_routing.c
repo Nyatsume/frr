@@ -15,6 +15,9 @@
 
 #include "segment_routing.h"
 
+#include "isisd/isisd.h"
+#include "isisd/isis_tlvs.h"
+
 const char *sr_algorithm_string(uint8_t algo)
 {
 	switch (algo) {

@@ -28,10 +28,10 @@ extern "C" {
  */
 #define SR_ALGORITHM_SPF 0	/* RFC8665 */
 #define SR_ALGORITHM_STRICT_SPF 1 /* RFC8665 */
-#define SR_ALGORITHM_UNSET 127    /* FRRouting defined */
+//#define SR_ALGORITHM_UNSET 127    /* FRRouting defined */
 #define SR_ALGORITHM_FLEX_MIN 128 /* RFC9350 Flex-Algorithm */
 #define SR_ALGORITHM_FLEX_MAX 255 /* RFC9350 Flex-Algorithm */
-#define SR_ALGORITHM_COUNT 256
+//#define SR_ALGORITHM_COUNT 256
 
 const char *sr_algorithm_string(uint8_t algo);
 

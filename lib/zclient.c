@@ -445,7 +445,7 @@ enum zclient_send_status zclient_send_localsid(struct zclient *zclient,
 	p.prefix = *sid;
 
 	api.vrf_id = VRF_DEFAULT;
-	api.type = zclient->redist_default;
+	api.type = zclient->redist_default;//test(nyatsume)
 	api.instance = 0;
 	api.safi = SAFI_UNICAST;
 	memcpy(&api.prefix, &p, sizeof(p));
