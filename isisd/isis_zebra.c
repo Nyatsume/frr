@@ -255,7 +255,7 @@ void isis_zebra_route_add_route(struct isis *isis, struct prefix *prefix,
 		return;
 
 	/* Uninstall the route if it doesn't have any valid nexthop. */
-	if (list_isempty(route_info->nexthops)) {
+	if (! route_info->nexthops || list_isempty(route_info->nexthops)) {
 		isis_zebra_route_del_route(isis, prefix, src_p, route_info);
 		return;
 	}
