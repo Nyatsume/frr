@@ -511,10 +511,10 @@ vtysh/vtysh_cmd.c: frr.xref
 	@test -f $@ || $(MAKE) $(AM_MAKEFLAGS) frr.xref
 
 ## automake's "ylwrap" is a great piece of GNU software... not.
-# .l.c:
-# 	$(AM_V_LEX)$(am__skiplex) $(LEXCOMPILE) $<
-# .y.c:
-# 	$(AM_V_YACC)$(am__skipyacc) $(YACCCOMPILE) $<
+.l.c:
+	$(AM_V_LEX)$(am__skiplex) $(LEXCOMPILE) $<
+.y.c:
+	$(AM_V_YACC)$(am__skipyacc) $(YACCCOMPILE) $<
 
 #
 # generated sources & extra foo
