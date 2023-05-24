@@ -6,6 +6,8 @@ tools/frr-reload usr/lib/frr/
 usr/bin/mtracebis
 usr/bin/vtysh
 usr/lib/*/frr/libfrr.*
+usr/lib/*/frr/libfrr_pb.*
+usr/lib/*/frr/libfrrfpm_pb.*
 usr/lib/*/frr/libfrrcares.*
 usr/lib/*/frr/libfrrospfapiclient.*
 usr/lib/*/frr/libmgmt_be_nb.*

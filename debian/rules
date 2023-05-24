@@ -2,6 +2,7 @@
 
 # standard Debian options & profiles
 
+export DEB_BUILD_OPTIONS = noopt
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 ifneq (,$(filter terse,$(DEB_BUILD_OPTIONS)))
@@ -58,7 +59,7 @@ override_dh_auto_configure:
 		--enable-doc-html \
 		--enable-snmp \
 		--enable-fpm \
-		--disable-protobuf \
+		--enable-protobuf \
 		--disable-zeromq \
 		--enable-ospfapi \
 		--enable-bgp-vnc \
@@ -108,7 +109,7 @@ override_dh_makeshlibs:
 	dh_makeshlibs -n
 
 override_dh_missing:
-	dh_missing --fail-missing
+	dh_missing --list-missing
 
 ifneq ($(filter nocheck,$(DEB_BUILD_PROFILES) $(DEB_BUILD_OPTIONS)),)
 override_dh_auto_test:
