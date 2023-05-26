@@ -48,6 +48,7 @@
 
 struct zclient *zclient;
 static struct zclient *zclient_sync;
+struct list *srv6_locator_chunks;
 
 /* Router-id update message from zebra. */
 static int isis_router_id_update_zebra(ZAPI_CALLBACK_ARGS)
@@ -815,18 +816,6 @@ static int isis_zebra_client_close_notify(ZAPI_CALLBACK_ARGS)
 	return ret;
 }
 
-static zclient_handler *const isis_handlers[] = {
-	[ZEBRA_ROUTER_ID_UPDATE] = isis_router_id_update_zebra,
-	[ZEBRA_INTERFACE_ADDRESS_ADD] = isis_zebra_if_address_add,
-	[ZEBRA_INTERFACE_ADDRESS_DELETE] = isis_zebra_if_address_del,
-	[ZEBRA_INTERFACE_LINK_PARAMS] = isis_zebra_link_params,
-	[ZEBRA_REDISTRIBUTE_ROUTE_ADD] = isis_zebra_read,
-	[ZEBRA_REDISTRIBUTE_ROUTE_DEL] = isis_zebra_read,
-
-	[ZEBRA_OPAQUE_MESSAGE] = isis_opaque_msg_handler,
-
-	[ZEBRA_CLIENT_CLOSE_NOTIFY] = isis_zebra_client_close_notify,
-};
 static bool adj_segment_is_exist(struct in6_addr *adj_addr)
 {
 	int i;
@@ -908,7 +897,6 @@ static void node_segment_unset(void)
 }
 #endif
 
-#if 0
 static void dump_srv6_chunks(struct list *cs)
 {
 	struct listnode *node;
@@ -920,7 +908,7 @@ static void dump_srv6_chunks(struct list *cs)
 	}
 }
 
-static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
+static int isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 {
 	struct stream *s = NULL;
 	struct srv6_locator_chunk s6c = {};
@@ -941,6 +929,7 @@ static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 		loc_addr.address.s6_addr[i] = s6c.prefix.prefix.s6_addr[i];
 	dump_srv6_chunks(srv6_locator_chunks);
 	node_segment_set();
+	zlog_debug("SKYLINE_SRV6_LOCATOR\n");
 
 #if 0
 	// adjs-sid
@@ -960,13 +949,29 @@ static void isis_zebra_process_srv6_locator_chunk(ZAPI_CALLBACK_ARGS)
 					//adj_segment_set(adj->ipv6_addresses);
 					adj_segment_set(adj->global_ipv6_addrs);
 #endif
+	return 0;
 }
 
+#if 0
 int isis_zebra_srv6_manager_get_locator_chunk(const char *name)
 {
 	return srv6_manager_get_locator_chunk(zclient, name);
 }
 #endif
+
+static zclient_handler *const isis_handlers[] = {
+	[ZEBRA_ROUTER_ID_UPDATE] = isis_router_id_update_zebra,
+	[ZEBRA_INTERFACE_ADDRESS_ADD] = isis_zebra_if_address_add,
+	[ZEBRA_INTERFACE_ADDRESS_DELETE] = isis_zebra_if_address_del,
+	[ZEBRA_INTERFACE_LINK_PARAMS] = isis_zebra_link_params,
+	[ZEBRA_REDISTRIBUTE_ROUTE_ADD] = isis_zebra_read,
+	[ZEBRA_REDISTRIBUTE_ROUTE_DEL] = isis_zebra_read,
+	[ZEBRA_SRV6_MANAGER_GET_LOCATOR_CHUNK] = isis_zebra_process_srv6_locator_chunk,
+
+	[ZEBRA_OPAQUE_MESSAGE] = isis_opaque_msg_handler,
+
+	[ZEBRA_CLIENT_CLOSE_NOTIFY] = isis_zebra_client_close_notify,
+};
 
 void isis_zebra_init(struct event_loop *master, int instance)
 {

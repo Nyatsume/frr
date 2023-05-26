@@ -58,7 +58,8 @@ DEFINE_MTYPE(ISISD, ISIS_SRV6_FUNCTION, "ISIS srv6 function");
 struct isis_srv6_node_segment node_segment;
 struct isis_srv6_adj_segment adj_segment[SRV6_MAX_SIDS];
 struct isis_srv6_locator_address loc_addr;
-struct list *srv6_locator_chunks;
+// struct list *srv6_locator_chunks;
+extern struct list *srv6_locator_chunks;
 struct in6_addr esid[SRV6_MAX_SIDS] = {0};
 
 static bool sid_exist(const struct in6_addr *sid)
