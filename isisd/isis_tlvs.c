@@ -1480,8 +1480,10 @@ static int unpack_item_ext_subtlv_asla(uint16_t mtid, uint8_t subtlv_len,
 		subsubtlv_len = stream_getc(s);
 		readable -= ISIS_SUBSUBTLV_HDR_SIZE;
 
+#if 0
 		zlog_debug("%s: pos: %d subsubtype: %d subsublen: %d limit: %d",
 		    __func__, stream_get_getp(s) - 2, subsubtlv_type, subsubtlv_len + 2, subtlv_len);
+#endif
 
 		switch (subsubtlv_type) {
 		case ISIS_SUBTLV_ADMIN_GRP:
@@ -1658,8 +1660,10 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 		/* Read SubTLV Type and Length */
 		subtlv_type = stream_getc(s);
 		subtlv_len = stream_getc(s);
+#if 0
 		zlog_debug("%s: ext_subtlv: pos: %d type: %d len: %d limit: %d",
 		    __func__, sum, subtlv_type, subtlv_len + 2, len);
+#endif
 		if (subtlv_len > len - sum - ISIS_SUBTLV_HDR_SIZE) {
 			sbuf_push(
 				log, indent,
@@ -2793,11 +2797,13 @@ static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 	//marker_debug_msg("call");
 
 	struct isis_srv6_locator_info *r = (struct isis_srv6_locator_info *)i;
+#if 0
 	r->metric = 0x11223344;
 	r->flags = 0xee;
 	r->algorithm = 0xaa;
 	r->loc_size = 64;
 	r->locator = loc_addr.address;
+#endif
 
 	// TODO(slankdev)
 	stream_putw(s, 0);
@@ -5731,7 +5737,6 @@ static int unpack_tlv_with_items(enum isis_tlv_context context,
 		sbuf_push(log, indent, "Unpacking as MT %s item TLV...\n",
 			  isis_mtid2str_fake(mtid));
 	} else {
-	if (tlv_type != ISIS_TLV_SRV6_LOCATOR_INFO)
 		sbuf_push(log, indent, "Unpacking as item TLV...\n");
 		mtid = ISIS_MT_IPV4_UNICAST;
 	}
@@ -5763,16 +5768,20 @@ static int unpack_tlv_with_items(enum isis_tlv_context context,
 		tlvs->mt_router_info_empty = (tlv_pos >= (size_t)tlv_len);
 	}
 
+#if 0
 	if (tlv_pos == (size_t)tlv_len) {
 		if (tlv_type == ISIS_TLV_SRV6_LOCATOR_INFO)
 	sbuf_push(log, indent,
-		  "Skipping unknown TLV %hhu (%hhu bytes)\n",
+		  "Skipping unknown TLV %hhu (%lu bytes)\n",
 		 ISIS_TLV_SRV6_LOCATOR_INFO, tlv_len - tlv_pos);
 	}
+#endif
 
 	while (tlv_pos < (size_t)tlv_len) {
-		zlog_debug("unpack_item: pos: %d type: %d len: %d limit: %d",
+#if 0
+		zlog_debug("unpack_item: pos: %lu type: %d len: %lu limit: %d",
 			tlv_pos, tlv_type, tlv_len - tlv_pos, tlv_len);
+#endif
 		rv = unpack_item(mtid, context, tlv_type, tlv_len - tlv_pos, s,
 				 log, dest, indent + 2);
 		if (rv)
@@ -6447,8 +6456,10 @@ static int unpack_tlv(enum isis_tlv_context context, size_t avail_len,
 
 	tlv_type = stream_getc(stream);
 	tlv_len = stream_getc(stream);
+#if 0
 	zlog_debug("%s: tlv_type: %d tlv_len: %d",
 	   __func__, tlv_type, tlv_len);
+#endif
 
 	sbuf_push(log, indent + 2,
 		  "Found TLV of type %hhu and len %hhu.\n",
@@ -6487,8 +6498,10 @@ static int unpack_tlvs(enum isis_tlv_context context, size_t avail_len,
 		  (context == ISIS_CONTEXT_LSP) ? "TLVs" : "sub-TLVs");
 
 	while (tlv_pos < avail_len) {
+#if 0
 		zlog_debug("%s: pos: %d limit: %d",
 		    __func__, tlv_pos, avail_len);
+#endif
 		rv = unpack_tlv(context, avail_len - tlv_pos, stream, log, dest,
 				indent + 2, unpacked_known_tlvs);
 		if (rv)

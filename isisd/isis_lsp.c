@@ -1383,9 +1383,10 @@ static void lsp_build(struct isis_lsp *lsp, struct isis_area *area)
 
 	if (true) {
 		struct prefix_ipv6 p;
-		p.prefix = loc_addr.address;
+		//p.prefix = loc_addr.address;
+		inet_pton (AF_INET6, "fd00:0:20ff::", &p.prefix);
 		p.prefixlen = 64;
-		uint32_t metric = 0x0;
+		uint32_t metric = 17;
 		uint8_t flags = 0x0;
 		uint8_t algorithm = 0x0;
 		isis_tlvs_add_srv6_locator_info(lsp->tlvs, &p, metric,
