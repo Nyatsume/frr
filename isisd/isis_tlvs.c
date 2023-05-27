@@ -1684,8 +1684,14 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 				"TLV %hhu: pos %d type: %d len: %d hdr_len: %d limit: %d !\n",
 				subtlv_type, sum, subtlv_type, subtlv_len, ISIS_SUBTLV_HDR_SIZE,
 				len);
+			sbuf_push(
+				log, indent,
+				"TLV %hhu: Len: %d: Skipping this entire SubTLV !\n",
+				subtlv_type, subtlv_len);
 
 			/* Skip unknown TLV */
+		  zlog_debug("%s: skipping SubTLA: type: %d len: %d limit: %d",
+		             __func__, subtlv_type, subtlv_len + 2, len);
 			stream_forward_getp(s, subtlv_len);
 			break;
 
