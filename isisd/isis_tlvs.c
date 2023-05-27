@@ -134,14 +134,14 @@ static void dump_srv6_segment_end(struct isis_srv6_sid_end *s)
 {
 	char b[256];
 
-	marker_debug_msg("=======");
-	marker_debug_fmsg("type:              %u", s->type);
-	marker_debug_fmsg("length:            %u", s->length);
-	marker_debug_fmsg("flags:             0x%02x", s->flags);
-	marker_debug_fmsg("endpoint_behavior: 0x%04x", s->endpoint_behavior);
-	marker_debug_fmsg("sids[0]:           %s",
+	zlog_debug ("=======");
+	zlog_debug ("type:              %u", s->type);
+	zlog_debug ("length:            %u", s->length);
+	zlog_debug ("flags:             0x%02x", s->flags);
+	zlog_debug ("endpoint_behavior: 0x%04x", s->endpoint_behavior);
+	zlog_debug ("sids[0]:           %s",
 			  inet_ntop(AF_INET6, &s->sids[0], b, sizeof(b)));
-	marker_debug_msg("=======");
+	zlog_debug ("=======");
 	return;
 }
 
@@ -149,14 +149,14 @@ static void dump_srv6_segment_end_x(struct isis_srv6_sid_end_x *s)
 {
 	char b[256];
 
-	marker_debug_msg("=======");
-	marker_debug_fmsg("flags:             0x%02x", s->flags);
-	marker_debug_fmsg("algorithm:         0x%02x", s->algorithm);
-	marker_debug_fmsg("weight:            0x%02x", s->weight);
-	marker_debug_fmsg("endpoint_behavior: 0x%04x", s->endpoint_behavior);
-	marker_debug_fmsg("sids[0]:           %s",
+	zlog_debug ("=======");
+	zlog_debug ("flags:             0x%02x", s->flags);
+	zlog_debug ("algorithm:         0x%02x", s->algorithm);
+	zlog_debug ("weight:            0x%02x", s->weight);
+	zlog_debug ("endpoint_behavior: 0x%04x", s->endpoint_behavior);
+	zlog_debug ("sids[0]:           %s",
 			  inet_ntop(AF_INET6, &s->sids[0], b, sizeof(b)));
-	marker_debug_msg("=======");
+	zlog_debug ("=======");
 	return;
 }
 
@@ -164,16 +164,16 @@ static void dump_srv6_segment_lan_end_x(struct isis_srv6_sid_lan_end_x *s)
 {
 	char b[256];
 
-	marker_debug_msg("=======");
-	marker_debug_fmsg("neighbor_id:		  %pSY",
+	zlog_debug ("=======");
+	zlog_debug ("neighbor_id:		  %pSY",
 			  s->neighbor_id);
-	marker_debug_fmsg("flags:             0x%02x", s->flags);
-	marker_debug_fmsg("algorithm:         0x%02x", s->algorithm);
-	marker_debug_fmsg("weight:            0x%02x", s->weight);
-	marker_debug_fmsg("endpoint_behavior: 0x%04x", s->endpoint_behavior);
-	marker_debug_fmsg("sids[0]:           %s",
+	zlog_debug ("flags:             0x%02x", s->flags);
+	zlog_debug ("algorithm:         0x%02x", s->algorithm);
+	zlog_debug ("weight:            0x%02x", s->weight);
+	zlog_debug ("endpoint_behavior: 0x%04x", s->endpoint_behavior);
+	zlog_debug ("sids[0]:           %s",
 			  inet_ntop(AF_INET6, &s->sids[0], b, sizeof(b)));
-	marker_debug_msg("=======");
+	zlog_debug ("=======");
 	return;
 }
 
@@ -217,14 +217,20 @@ static int unpack_item_srv6_loc_subtlvs(uint16_t mtid, uint8_t len, struct strea
 
 		subtlv_type = stream_getc(s);
 		subtlv_len = stream_getc(s);
+    zlog_debug ("%s: reading... type: %d (SID_END: %d) len :%d",
+                __func__, subtlv_type, ISIS_SUBTLV_SID_END, subtlv_len);
 
 		switch (subtlv_type) {
 		case ISIS_SUBTLV_SID_END:
+#if 0
 			if (subtlv_len != ISIS_SUBTLV_SID_END_SIZE) {
 				sbuf_push(log, indent,
 						"TLV size does not match expected size of END SID! (expect: %d real: %d)\n", ISIS_SUBTLV_SID_END_SIZE, subtlv_len);
 				stream_forward_getp(s, subtlv_len);
 			} else {
+#else
+      {
+#endif
 				subtlvs->sid_end.flags = stream_getc(s);
 				subtlvs->sid_end.endpoint_behavior = stream_getw(s);
 				stream_get(&subtlvs->sid_end.sids[0], s, 16);
@@ -265,6 +271,9 @@ static int unpack_item_srv6_loc_subtlvs(uint16_t mtid, uint8_t len, struct strea
 		}
 		sum += subtlv_len + ISIS_SUBTLV_HDR_SIZE;
 	}
+
+  zlog_debug ("%s: reading... upto: %d sum: %d",
+              __func__, len, sum);
 
 	return 0;
 }
@@ -1660,8 +1669,8 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 		/* Read SubTLV Type and Length */
 		subtlv_type = stream_getc(s);
 		subtlv_len = stream_getc(s);
-#if 0
-		zlog_debug("%s: ext_subtlv: pos: %d type: %d len: %d limit: %d",
+#if 1
+		zlog_debug("%s: pos: %d type: %d len: %d limit: %d",
 		    __func__, sum, subtlv_type, subtlv_len + 2, len);
 #endif
 		if (subtlv_len > len - sum - ISIS_SUBTLV_HDR_SIZE) {
@@ -1670,6 +1679,16 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 				"TLV %hhu: Available data %u is less than TLV size %u !\n",
 				subtlv_type, len - sum - ISIS_SUBTLV_HDR_SIZE,
 				subtlv_len);
+			sbuf_push(
+				log, indent,
+				"TLV %hhu: pos %d type: %d len: %d hdr_len: %d limit: %d !\n",
+				subtlv_type, sum, subtlv_type, subtlv_len, ISIS_SUBTLV_HDR_SIZE,
+				len);
+
+			/* Skip unknown TLV */
+			stream_forward_getp(s, subtlv_len);
+			break;
+
 			return 1;
 		}
 
@@ -1883,11 +1902,15 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 			break;
 		/* Segment Routing Adjacency as per RFC8667 section #2.2.1 */
 		case ISIS_SUBTLV_ADJ_SID:
+#if 0
 			if (subtlv_len != ISIS_SUBTLV_ADJ_SID_SIZE
 			    && subtlv_len != ISIS_SUBTLV_ADJ_SID_SIZE + 1) {
 				TLV_SIZE_MISMATCH(log, indent, "Adjacency SID");
 				stream_forward_getp(s, subtlv_len);
 			} else {
+#else
+      {
+#endif
 				struct isis_adj_sid *adj;
 
 				adj = XCALLOC(MTYPE_ISIS_SUBTLV,
@@ -1931,12 +1954,16 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 			break;
 		/* Segment Routing LAN-Adjacency as per RFC8667 section 2.2.2 */
 		case ISIS_SUBTLV_LAN_ADJ_SID:
+#if 0
 			if (subtlv_len != ISIS_SUBTLV_LAN_ADJ_SID_SIZE
 			    && subtlv_len != ISIS_SUBTLV_LAN_ADJ_SID_SIZE + 1) {
 				TLV_SIZE_MISMATCH(log, indent,
 						  "LAN-Adjacency SID");
 				stream_forward_getp(s, subtlv_len);
 			} else {
+#else
+      {
+#endif
 				struct isis_lan_adj_sid *lan;
 
 				lan = XCALLOC(MTYPE_ISIS_SUBTLV,
@@ -1994,6 +2021,7 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 			}
 			break;
 		case ISIS_SUBTLV_SID_END_X:
+#if 0
 			zlog_debug("Skipping ISIS_SUBTLV_SID_END_X.");
 			sbuf_push(log, indent, "Skipping ISIS_SUBTLV_SID_END_X.\n");
 			stream_forward_getp(s, subtlv_len);
@@ -2003,8 +2031,12 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 				sbuf_push(log, indent,
 						"TLV size does not match expected size of END.X SID!\n");
 			} else {
+#else
+      {
+#endif
 				struct isis_srv6_sid_end_x *adj;
 				struct isis_srv6_adj_sid *srv6_adj_sid;
+        uint8_t subsubtlvs_len;
 
 				adj = XCALLOC(MTYPE_ISIS_SUBTLV,
 					sizeof(struct isis_srv6_sid_end_x));
@@ -2019,19 +2051,25 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 				dump_srv6_segment_end_x(adj);
 				marker_debug_msg("call");
 
-				uint8_t subsubtlvs_len = stream_getc(s);
-				//(void) subsubtlvs_len;
+				subsubtlvs_len = stream_getc(s);
+        zlog_debug ("ISIS_SUBTLV_SID_END_X: subsubtlvs_len: %d",
+                    subsubtlvs_len);
 				isis_tlvs_add_srv6_adj_sid(exts, srv6_adj_sid);
 			}
 			break;
 		case ISIS_SUBTLV_SID_LAN_END_X:
+#if 0
 			//marker_debug_msg("this is lan adj sid");
 			if (subtlv_len != ISIS_SUBTLV_SID_LAN_END_X_SIZE) {
 				sbuf_push(log, indent,
 						"TLV size does not match expected size of LAN END.X SID!\n");
 			} else {
+#else
+      {
+#endif
 				struct isis_srv6_sid_lan_end_x *lan;
 				struct isis_srv6_lan_adj_sid *srv6_lan_sid;
+        uint8_t subsubtlvs_len;
 
 				lan = XCALLOC(MTYPE_ISIS_SUBTLV,
 					sizeof(struct isis_srv6_sid_lan_end_x));
@@ -2047,9 +2085,10 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 				srv6_lan_sid->sid = lan->sids[0];
 				dump_srv6_segment_lan_end_x(lan);
 
-				uint8_t subsubtlvs_len = stream_getc(s);
-				//(void) subsubtlvs_len;
-				//isis_tlvs_add_srv6_lan_adj_sid(exts, srv6_lan_sid);
+        subsubtlvs_len = stream_getc(s);
+        zlog_debug ("ISIS_SUBTLV_SID_LAN_END_X: subsubtlvs_len: %d",
+                    subsubtlvs_len);
+				isis_tlvs_add_srv6_lan_adj_sid(exts, srv6_lan_sid);
 			}
 			break;
 		default:
@@ -2750,13 +2789,13 @@ static void dump_srv6_locator_info(struct isis_srv6_locator_info *l)
 {
 	char b[256];
 
-	marker_debug_msg("========");
-	marker_debug_fmsg("metric: %04x", l->metric);
-	marker_debug_fmsg("flags: %01x", l->flags);
-	marker_debug_fmsg("algorithm: %01x", l->algorithm);
-	marker_debug_fmsg("loc_size: %u", l->loc_size);
-	marker_debug_fmsg("locator: %s", inet_ntop(AF_INET6, &l->locator, b, sizeof(b)));
-	marker_debug_msg("========");
+	zlog_debug("========");
+	zlog_debug("metric: %04x", l->metric);
+	zlog_debug("flags: %01x", l->flags);
+	zlog_debug("algorithm: %01x", l->algorithm);
+	zlog_debug("loc_size: %u", l->loc_size);
+	zlog_debug("locator: %s", inet_ntop(AF_INET6, &l->locator, b, sizeof(b)));
+	zlog_debug("========");
 	return ;
 }
 
@@ -2848,6 +2887,7 @@ static int unpack_item_srv6_locator_info(uint16_t mtid, uint8_t len,
 	int proc;
 	int rest = len;
 
+  zlog_debug ("%s: tlv_len: %d", __func__, len);
 #if 0
 	zlog_debug("%s: skip", __func__);
 	goto out;
@@ -2861,11 +2901,13 @@ static int unpack_item_srv6_locator_info(uint16_t mtid, uint8_t len,
 	rv = XCALLOC(MTYPE_ISIS_TLV, sizeof(*rv));
 
 	uint16_t dummy_mt_bit = stream_getw(s);
-	//(void)dummy_mt_bit;
+  zlog_debug ("dummy_mt_bit: %d", dummy_mt_bit);
 	rv->metric = stream_getl(s);
 	rv->flags = stream_getc(s);
 	rv->algorithm = stream_getc(s);
 	rv->loc_size = stream_getc(s);
+  zlog_debug ("%s: tlv_len: %d read: 2+4+3 rest: %d",
+              __func__, len, rest);
 
 	uint8_t spl = (rv->loc_size + 7) / 8;
 
@@ -2875,6 +2917,10 @@ static int unpack_item_srv6_locator_info(uint16_t mtid, uint8_t len,
 	rest -= proc;
 
 	stream_get(&rv->locator, s, spl);
+
+  zlog_debug ("%s: tlv_len: %d read: spl: %d rest: %d",
+              __func__, len, spl, rest);
+
 	dump_srv6_locator_info(rv);
 
 	proc = 1;
@@ -2885,17 +2931,29 @@ static int unpack_item_srv6_locator_info(uint16_t mtid, uint8_t len,
 	uint8_t subtlv_len;
 	subtlv_len = stream_getc(s);
 
+  zlog_debug ("%s: tlv_len: %d read: subtlv_len: 1 rest: %d",
+              __func__, len, rest);
+
 	proc = subtlv_len;
 	if (rest < proc)
 		goto out;
 	rest -= proc;
 
+  zlog_debug ("%s: tlv_len: %d subtlv_len: %d rest: %d",
+              __func__, len, subtlv_len, rest);
+
 	if (subtlv_len) {
 		if (unpack_item_srv6_loc_subtlvs(mtid, subtlv_len,
 				s, log, rv, indent + 4)) {
+      zlog_debug ("%s: tlv_len: %d goto out", __func__, len);
 			goto out;
 		}
 	}
+
+  zlog_debug ("%s: tlv_len: %d subtlv_len: %d read: %d rest: %d",
+              __func__, len, subtlv_len, subtlv_len, rest);
+  zlog_debug ("%s: skipping residue: %d", __func__, rest);
+  stream_forward_getp (s, rest);
 
 	format_item_srv6_locator_info(mtid, (struct isis_item *)rv, log,
 				      NULL, indent + 2);
@@ -5041,10 +5099,13 @@ static int unpack_tlv_router_cap(enum isis_tlv_context context,
 				uint8_t algo;
 
 				algo = stream_getc(s);
+#if 0
+        /* In case SR_ALGORITHM_COUNT is less than 256 */
 				if (i >= SR_ALGORITHM_COUNT)
 					break;
 				if (algo >= SR_ALGORITHM_COUNT)
 					break;
+#endif
 				rcap->algo[algo] = algo;
 			}
 			break;
@@ -5126,7 +5187,10 @@ static int unpack_tlv_router_cap(enum isis_tlv_context context,
 			fad->fad.metric_type = stream_getc(s);
 			fad->fad.calc_type = stream_getc(s);
 			fad->fad.priority = stream_getc(s);
+#if 0
+      /* In case SR_ALGORITHM_COUNT is less than 256 */
 			if (fad->fad.algorithm < SR_ALGORITHM_COUNT)
+#endif
 				rcap->fads[fad->fad.algorithm] = fad;
 			admin_group_init(&fad->fad.admin_group_exclude_any);
 			admin_group_init(&fad->fad.admin_group_include_any);
