@@ -4687,6 +4687,11 @@ static void format_tlv_router_cap(const struct isis_router_cap *router_cap,
 		sbuf_push(buf, indent, "  Node Maximum SID Depth: %u\n",
 			  router_cap->msd);
 
+  /* SRv6 Capabilities Flag as per RFC9352 section #2 */
+  if (router_cap->srv6_capability_set)
+		sbuf_push(buf, indent, "  SRv6 Capabilities Flag: %#x\n",
+			  router_cap->srv6_capability_flag);
+
 #ifndef FABRICD
 	/* Flex-Algo */
 	for (int i = 0; i < SR_ALGORITHM_COUNT; i++) {
@@ -4842,7 +4847,7 @@ static size_t isis_router_cap_tlv_size(const struct isis_router_cap *router_cap)
 	return sz;
 }
 
-static int pack_tlv_router_cap(const struct isis_router_cap *router_cap,
+static int pack_tlv_router_cap(struct isis_router_cap *router_cap,
 			       struct stream *s)
 {
 	size_t tlv_len, len_pos;
@@ -4903,6 +4908,12 @@ static int pack_tlv_router_cap(const struct isis_router_cap *router_cap,
 			stream_putc(s, router_cap->msd);
 		}
 	}
+
+  /* SRv6 Capabilities Sub-TLV */
+  router_cap->srv6_capability_set = 1;
+  stream_putc(s, ISIS_SUBTLV_SRV6_CAPABILITIES);
+  stream_putc(s, 2);
+  stream_putw(s, 0);
 
 #ifndef FABRICD
 	/* Flex Algo Definitions */
@@ -5012,6 +5023,7 @@ static int unpack_tlv_router_cap(enum isis_tlv_context context,
 		rcap = XCALLOC(MTYPE_ISIS_TLV, sizeof(struct isis_router_cap));
 		for (int i = 0; i < SR_ALGORITHM_COUNT; i++)
 			rcap->algo[i] = SR_ALGORITHM_UNSET;
+    rcap->srv6_capability_set = 0;
 	}
 
 	/* Get Router ID and Flags */
@@ -5170,6 +5182,20 @@ static int unpack_tlv_router_cap(enum isis_tlv_context context,
 				stream_forward_getp(s, size);
 
 			break;
+
+    case ISIS_SUBTLV_SRV6_CAPABILITIES:
+      /* SRv6 Capabilities Sub-TLV */
+      rcap->srv6_capability_set = 1;
+			if (length < 2) {
+				stream_forward_getp(s, length);
+				break;
+			}
+      rcap->srv6_capability_flag = stream_getw (s);
+      if (length > 2) {
+        stream_forward_getp(s, length - 2);
+      }
+			break;
+
 		case ISIS_SUBTLV_NODE_MSD:
 			/* Check that MSD is correctly formated */
 			if (length < MSD_TLV_SIZE) {

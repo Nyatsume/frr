@@ -298,6 +298,10 @@ struct isis_router_cap {
 	/* RFC 8491 */
 	uint8_t msd;
 
+  /* RFC 9352 */
+  uint16_t srv6_capability_set;
+  uint16_t srv6_capability_flag;
+
 #ifndef FABRICD
 	/* RFC9350 Flex-Algorithm */
 	struct isis_router_cap_fad *fads[SR_ALGORITHM_COUNT];
@@ -488,6 +492,7 @@ enum isis_tlv_type {
 	ISIS_SUBTLV_PREFIX_SID = 3,
 	ISIS_SUBTLV_ADJ_SID = 31,
 	ISIS_SUBTLV_LAN_ADJ_SID = 32,
+  ISIS_SUBTLV_SRV6_CAPABILITIES = 25,
 
 	/* RFC 7810 */
 	ISIS_SUBTLV_AV_DELAY = 33,
