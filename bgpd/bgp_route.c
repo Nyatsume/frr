@@ -4771,11 +4771,14 @@ void bgp_update(struct peer *peer, const struct prefix *p, uint32_t addpath_id,
 	}
 
 	/* Update SRv6 SID */
-	if (safi == SAFI_MPLS_VPN) {
+	//if (safi == SAFI_MPLS_VPN) {
+	if (true) {
 		extra = bgp_path_info_extra_get(new);
 		if (attr->srv6_l3vpn) {
 			sid_copy(&extra->sid[0].sid, &attr->srv6_l3vpn->sid);
 			extra->num_sids = 1;
+			bgp_set_valid_label(extra->label);
+			extra->num_labels = 1;
 
 			extra->sid[0].loc_block_len =
 				attr->srv6_l3vpn->loc_block_len;
