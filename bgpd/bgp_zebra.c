@@ -1547,6 +1547,11 @@ void bgp_zebra_announce(struct bgp_dest *dest, const struct prefix *p,
 
 		api_nh->weight = nh_weight;
 
+		zlog_debug("%s: srv6 debug: %pFX mpinfo: %p extra: %p is_evpn: %d",
+		        __func__, p, mpinfo, mpinfo->extra, is_evpn);
+		zlog_debug("%s: srv6 debug: %pFX bgp_is_valid_label: %d label: %d",
+		        __func__, p, bgp_is_valid_label(&labels[0]), labels[0]);
+
 		if (mpinfo->extra && !is_evpn &&
 		    bgp_is_valid_label(&labels[0]) &&
 		    !sid_zero(&mpinfo->extra->sid[0].sid)) {
