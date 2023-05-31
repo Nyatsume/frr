@@ -304,7 +304,7 @@ static int pack_item_srv6_loc_subtlvs(struct isis_srv6_loc_subtlvs *subtlvs,
 	if (IS_SUBTLV(subtlvs, LOC_SRV6_NODE_SID)) {
 		stream_putc(s, ISIS_SUBTLV_SID_END);
 		stream_putc(s, ISIS_SUBTLV_SID_END_SIZE);
-		stream_putc(s, subtlvs->sid_end.flags);
+		stream_putc(s, 0x00);
 		stream_putw(s, subtlvs->sid_end.endpoint_behavior);
 		stream_put(s, &subtlvs->sid_end.sids[0], 16);
 
