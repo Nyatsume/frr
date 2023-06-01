@@ -88,6 +88,10 @@ extern void vrf_import_from_vrf(struct bgp *to_bgp, struct bgp *from_bgp,
 void vrf_unimport_from_vrf(struct bgp *to_bgp, struct bgp *from_bgp,
 			   afi_t afi, safi_t safi);
 
+extern void srv6_prefix_sid_update(struct bgp *bgp,
+				     struct bgp_path_info *path_vrf);
+extern void srv6_prefix_sid_update_all(struct bgp *bgp, afi_t afi);
+
 static inline bool is_bgp_vrf_mplsvpn(struct bgp *bgp)
 {
 	afi_t afi;
@@ -232,6 +236,11 @@ static inline void vpn_leak_postchange(enum vpn_policy_direction direction,
 	if (!bgp_vpn)
 		return;
 
+  zlog_debug("%s: VPN %s %s VRF %s: afi: %d",
+      __func__, bgp_vpn->name_pretty,
+      (direction == BGP_VPN_POLICY_DIR_FROMVPN ? "->" : "<-"),
+      bgp_vrf->name_pretty, afi);
+
 	if (direction == BGP_VPN_POLICY_DIR_FROMVPN) {
 		/* trigger a flush to re-sync with ADJ-RIB-in */
 		if (!CHECK_FLAG(bgp_vpn->af_flags[afi][SAFI_MPLS_VPN],
@@ -255,6 +264,8 @@ static inline void vpn_leak_postchange(enum vpn_policy_direction direction,
 		    !CHECK_FLAG(bgp_vrf->vrf_flags, BGP_VRF_TOVPN_SID_AUTO))
 			delete_vrf_tovpn_sid(bgp_vpn, bgp_vrf, afi);
 
+    zlog_debug ("%s: tovpn_sid: %pI6", __func__,
+        bgp_vrf->vpn_policy[afi].tovpn_sid);
 		if (!bgp_vrf->vpn_policy[afi].tovpn_sid && !bgp_vrf->tovpn_sid)
 			ensure_vrf_tovpn_sid(bgp_vpn, bgp_vrf, afi);
 
