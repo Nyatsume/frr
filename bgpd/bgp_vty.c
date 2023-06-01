@@ -9983,11 +9983,12 @@ DEFPY (bgp_encapsulation_type_srv6,
 	}
 
 	if (no) {
-		bgp->encapsulation_type_srv6 = 0;
+		bgp->encapsulation_type_srv6[afi][safi] = 0;
 		return CMD_SUCCESS;
 	}
 
-	bgp->encapsulation_type_srv6 = 1;
+	bgp->encapsulation_type_srv6[afi][safi] = 1;
+  srv6_prefix_sid_update_all(bgp, afi);
 
 	if (debug)
 		zlog_debug("attach the prefix-SID for each routes.\n");
@@ -18262,7 +18263,7 @@ static void bgp_config_write_family(struct vty *vty, struct bgp *bgp, afi_t afi,
 		}
 	}
 
-	if (bgp->encapsulation_type_srv6)
+	if (bgp->encapsulation_type_srv6[afi][safi])
 		vty_out(vty, "  encapsulation-type srv6\n");
 
 	vty_endframe(vty, " exit-address-family\n");
