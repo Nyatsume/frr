@@ -9963,6 +9963,41 @@ DEFPY (af_routetarget_import,
 	return CMD_SUCCESS;
 }
 
+DEFPY (bgp_encapsulation_type_srv6,
+       bgp_encapsulation_type_srv6_cmd,
+       "[no] encapsulation-type srv6",
+       NO_STR
+       "Set encapsulation type\n"
+       "Enable SRv6 L3VPN End point (Prefix-SID attachments)\n")
+{
+	VTY_DECLVAR_CONTEXT(bgp, bgp);
+	int debug = 1;
+	afi_t afi;
+	safi_t safi;
+
+	afi = bgp_node_afi(vty);
+	safi = bgp_node_safi(vty);
+	if ((SAFI_UNICAST != safi) || ((AFI_IP != afi) && (AFI_IP6 != afi))) {
+		vty_out(vty, "%% encapsulation-type srv6 valid only for unicast ipv4|ipv6\n");
+		return CMD_WARNING_CONFIG_FAILED;
+	}
+
+	if (no) {
+		bgp->encapsulation_type_srv6 = 0;
+		return CMD_SUCCESS;
+	}
+
+	bgp->encapsulation_type_srv6 = 1;
+
+	if (debug)
+		zlog_debug("attach the prefix-SID for each routes.\n");
+
+	vty_out(vty, "attach the prefix-SID for each routes.\n");
+	vty_out(vty, "Not implemented yet.\n");
+
+	return CMD_SUCCESS;
+}
+
 DEFUN_NOSH (address_family_ipv4_safi,
 	address_family_ipv4_safi_cmd,
 	"address-family ipv4 [<unicast|multicast|vpn|labeled-unicast|flowspec>]",
@@ -18227,6 +18262,9 @@ static void bgp_config_write_family(struct vty *vty, struct bgp *bgp, afi_t afi,
 		}
 	}
 
+	if (bgp->encapsulation_type_srv6)
+		vty_out(vty, "  encapsulation-type srv6\n");
+
 	vty_endframe(vty, " exit-address-family\n");
 }
 
@@ -20487,6 +20525,9 @@ void bgp_vty_init(void)
 
 	install_element(BGP_IPV4_NODE, &bgp_imexport_vrf_cmd);
 	install_element(BGP_IPV6_NODE, &bgp_imexport_vrf_cmd);
+
+	install_element(BGP_IPV4_NODE, &bgp_encapsulation_type_srv6_cmd);
+	install_element(BGP_IPV6_NODE, &bgp_encapsulation_type_srv6_cmd);
 
 	/* ttl_security commands */
 	install_element(BGP_NODE, &neighbor_ttl_security_cmd);

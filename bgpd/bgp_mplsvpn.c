@@ -347,13 +347,16 @@ void vpn_leak_zebra_vrf_label_withdraw(struct bgp *bgp, afi_t afi)
  */
 void vpn_leak_zebra_vrf_sid_update_per_af(struct bgp *bgp, afi_t afi)
 {
-	int debug = BGP_DEBUG(vpn, VPN_LEAK_LABEL);
+	int debug;
 	enum seg6local_action_t act;
 	struct seg6local_context ctx = {};
 	struct in6_addr *tovpn_sid = NULL;
 	struct in6_addr *tovpn_sid_ls = NULL;
 	struct vrf *vrf;
 
+	debug = BGP_DEBUG(vpn, VPN_LEAK_LABEL)
+		| BGP_DEBUG(vpn, VPN_LEAK_FROM_VRF)
+		| BGP_DEBUG(vpn, VPN_LEAK_TO_VRF);
 	if (bgp->vrf_id == VRF_UNKNOWN) {
 		if (debug)
 			zlog_debug("%s: vrf %s: afi %s: vrf_id not set, can't set zebra vrf label",
