@@ -2,7 +2,7 @@
 
 # standard Debian options & profiles
 
-export DEB_BUILD_OPTIONS = noopt
+export DEB_BUILD_OPTIONS = noopt nostrip parallel=16
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 ifneq (,$(filter terse,$(DEB_BUILD_OPTIONS)))
