@@ -9990,6 +9990,7 @@ DEFPY (bgp_encapsulation_type_srv6,
 	bgp->encapsulation_type_srv6[afi][safi] = 1;
 	ensure_unicast_sid_per_af(bgp, afi);
 	vpn_leak_zebra_unicast_sid_update_per_af(bgp, afi);
+	vpn_leak_unicast_sid_update_all(bgp, afi);
 	//srv6_prefix_sid_update_all(bgp, afi);
 
 	return CMD_SUCCESS;
