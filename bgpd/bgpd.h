@@ -784,7 +784,7 @@ struct bgp {
 	struct srv6_locator_chunk *tovpn_sid_locator;
 	uint32_t tovpn_sid_transpose_label;
 	struct in6_addr *tovpn_zebra_vrf_sid_last_sent;
-	uint8_t encapsulation_type_srv6[AFI_MAX][SAFI_MAX];
+	uint8_t encapsulation_type_srv6;
 
 	/* TCP keepalive parameters for BGP connection */
 	uint16_t tcp_keepalive_idle;
