@@ -64,6 +64,7 @@ extern bool vpn_leak_to_vrf_update(struct bgp *from_bgp,
 
 extern void vpn_leak_to_vrf_withdraw(struct bgp_path_info *path_vpn);
 
+
 extern void vpn_leak_zebra_vrf_label_update(struct bgp *bgp, afi_t afi);
 extern void vpn_leak_zebra_vrf_label_withdraw(struct bgp *bgp, afi_t afi);
 extern void vpn_leak_zebra_vrf_sid_update(struct bgp *bgp, afi_t afi);
@@ -81,7 +82,13 @@ extern void delete_vrf_tovpn_sid_per_vrf(struct bgp *vpn, struct bgp *vrf);
 extern void ensure_vrf_tovpn_sid_per_af(struct bgp *vpn, struct bgp *vrf,
 					afi_t afi);
 extern void ensure_vrf_tovpn_sid_per_vrf(struct bgp *vpn, struct bgp *vrf);
+
 extern void ensure_unicast_sid_per_af(struct bgp *bgp, afi_t afi);
+extern void vpn_leak_zebra_unicast_sid_update_per_af(struct bgp *bgp, afi_t afi);
+extern void vpn_leak_unicast_sid_update(struct bgp *from_bgp,
+					struct bgp_path_info *path_vrf);
+extern void vpn_leak_unicast_sid_update_all(struct bgp *bgp, afi_t afi);
+
 extern void transpose_sid(struct in6_addr *sid, uint32_t label, uint8_t offset,
 			  uint8_t size);
 extern void vrf_import_from_vrf(struct bgp *to_bgp, struct bgp *from_bgp,

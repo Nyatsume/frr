@@ -757,6 +757,7 @@ struct bgp {
 	struct vpn_policy vpn_policy[AFI_MAX];
 
   /* Unicast SID */
+	uint32_t unicast_label[AFI_MAX]; /* may be MPLS_LABEL_NONE */
 	uint32_t unicast_sid_index[AFI_MAX]; /* unset => set to 0 */
 	uint32_t unicast_sid_flags[AFI_MAX];
 	struct in6_addr *unicast_sid[AFI_MAX];
