@@ -4605,7 +4605,12 @@ bgp_size_t bgp_packet_attribute(struct bgp *bgp, struct peer *peer,
 	}
 
 	/* SRv6 Service Information Attribute. */
+#if 0
 	if ((afi == AFI_IP || afi == AFI_IP6) && safi == SAFI_MPLS_VPN) {
+#else
+	if ((afi == AFI_IP || afi == AFI_IP6) &&
+		(safi == SAFI_MPLS_VPN || safi == SAFI_UNICAST)) {
+#endif
 		if (attr->srv6_l3vpn) {
 			uint8_t subtlv_len =
 				BGP_PREFIX_SID_SRV6_L3_SERVICE_SID_STRUCTURE_LENGTH
