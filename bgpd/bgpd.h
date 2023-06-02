@@ -756,6 +756,14 @@ struct bgp {
 
 	struct vpn_policy vpn_policy[AFI_MAX];
 
+  /* Unicast SID */
+	uint32_t unicast_sid_index[AFI_MAX]; /* unset => set to 0 */
+	uint32_t unicast_sid_flags[AFI_MAX];
+	struct in6_addr *unicast_sid[AFI_MAX];
+	struct srv6_locator_chunk *unicast_sid_locator[AFI_MAX];
+	uint32_t unicast_sid_transpose_label[AFI_MAX];
+	struct in6_addr *unicast_zebra_vrf_sid_last_sent[AFI_MAX];
+
 	struct bgp_pbr_config *bgp_pbr_cfg;
 
 	/* Count of peers in established state */
