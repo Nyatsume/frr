@@ -9989,13 +9989,8 @@ DEFPY (bgp_encapsulation_type_srv6,
 
 	bgp->encapsulation_type_srv6[afi][safi] = 1;
 	ensure_unicast_sid_per_af(bgp, afi);
+	vpn_leak_zebra_unicast_sid_update_per_af(bgp, afi);
 	//srv6_prefix_sid_update_all(bgp, afi);
-
-	if (debug)
-		zlog_debug("attach the prefix-SID for each routes.\n");
-
-	vty_out(vty, "attach the prefix-SID for each routes.\n");
-	vty_out(vty, "Not implemented yet.\n");
 
 	return CMD_SUCCESS;
 }

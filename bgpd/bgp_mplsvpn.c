@@ -991,6 +991,53 @@ void ensure_unicast_sid_per_af(struct bgp *bgp, afi_t afi)
 		unicast_sid_transpose_label;
 }
 
+void vpn_leak_zebra_unicast_sid_update_per_af(struct bgp *bgp, afi_t afi)
+{
+	int debug;
+	enum seg6local_action_t act;
+	struct seg6local_context ctx = {};
+	struct in6_addr *unicast_sid = NULL;
+	struct in6_addr *unicast_sid_ls = NULL;
+	struct vrf *vrf;
+
+	debug = BGP_DEBUG(vpn, VPN_LEAK_LABEL)
+		| BGP_DEBUG(vpn, VPN_LEAK_FROM_VRF)
+		| BGP_DEBUG(vpn, VPN_LEAK_TO_VRF);
+	if (bgp->vrf_id == VRF_UNKNOWN) {
+		if (debug)
+			zlog_debug("%s: vrf %s: afi %s: vrf_id not set, can't set zebra vrf label",
+				   __func__, bgp->name_pretty, afi2str(afi));
+		return;
+	}
+
+	unicast_sid = bgp->unicast_sid[afi];
+	if (!unicast_sid) {
+		if (debug)
+			zlog_debug("%s: vrf %s: afi %s: sid not set", __func__,
+				   bgp->name_pretty, afi2str(afi));
+		return;
+	}
+
+	if (debug)
+		zlog_debug("%s: vrf %s: afi %s: setting sid %pI6 for vrf id %d",
+			   __func__, bgp->name_pretty, afi2str(afi), unicast_sid,
+			   bgp->vrf_id);
+
+	vrf = vrf_lookup_by_id(bgp->vrf_id);
+	if (!vrf)
+		return;
+
+	ctx.table = vrf->data.l.table_id;
+	act = afi == AFI_IP ? ZEBRA_SEG6_LOCAL_ACTION_END_DT4
+		: ZEBRA_SEG6_LOCAL_ACTION_END_DT6;
+	zclient_send_localsid(zclient, unicast_sid, bgp->vrf_id, act, &ctx);
+
+	unicast_sid_ls = XCALLOC(MTYPE_BGP_SRV6_SID, sizeof(struct in6_addr));
+	*unicast_sid_ls = *unicast_sid;
+	bgp->unicast_zebra_vrf_sid_last_sent[afi] = unicast_sid_ls;
+}
+
+
 
 /*
  * This function embeds upper `len` bits of `label` in `sid`,
