@@ -9988,6 +9988,7 @@ DEFPY (bgp_encapsulation_type_srv6,
 	}
 
 	bgp->encapsulation_type_srv6[afi][safi] = 1;
+	ensure_unicast_sid_per_af(bgp, afi);
 	//srv6_prefix_sid_update_all(bgp, afi);
 
 	if (debug)

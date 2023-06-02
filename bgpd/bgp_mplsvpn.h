@@ -81,6 +81,7 @@ extern void delete_vrf_tovpn_sid_per_vrf(struct bgp *vpn, struct bgp *vrf);
 extern void ensure_vrf_tovpn_sid_per_af(struct bgp *vpn, struct bgp *vrf,
 					afi_t afi);
 extern void ensure_vrf_tovpn_sid_per_vrf(struct bgp *vpn, struct bgp *vrf);
+extern void ensure_unicast_sid_per_af(struct bgp *bgp, afi_t afi);
 extern void transpose_sid(struct in6_addr *sid, uint32_t label, uint8_t offset,
 			  uint8_t size);
 extern void vrf_import_from_vrf(struct bgp *to_bgp, struct bgp *from_bgp,

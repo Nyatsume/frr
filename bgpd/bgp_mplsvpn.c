@@ -640,8 +640,10 @@ static uint32_t alloc_new_sid(struct bgp *bgp, uint32_t index,
 	uint8_t func_len = 0, shift_len = 0;
 	uint32_t index_max = 0;
 
-	if (!bgp || !sid_locator_chunk || !sid)
+	if (!bgp || !sid_locator_chunk || !sid) {
+		zlog_debug ("%s: no bgp or no chunk or no sid", __func__);
 		return false;
+	}
 
 	for (ALL_LIST_ELEMENTS_RO(bgp->srv6_locator_chunks, node, chunk)) {
 		if (chunk->function_bits_length >
@@ -914,6 +916,81 @@ void delete_vrf_tovpn_sid(struct bgp *bgp_vpn, struct bgp *bgp_vrf, afi_t afi)
 	delete_vrf_tovpn_sid_per_af(bgp_vpn, bgp_vrf, afi);
 	delete_vrf_tovpn_sid_per_vrf(bgp_vpn, bgp_vrf);
 }
+
+void ensure_unicast_sid_per_af(struct bgp *bgp, afi_t afi)
+{
+	int debug = BGP_DEBUG(vpn, VPN_LEAK_FROM_VRF);
+	struct srv6_locator_chunk *unicast_sid_locator;
+	struct in6_addr *unicast_sid;
+	uint32_t unicast_sid_index = 0, unicast_sid_transpose_label;
+	bool unicast_sid_auto = false;
+
+	if (debug)
+		zlog_debug("%s: try to allocate new Unicast SID for vrf %s: afi %s",
+			   __func__, bgp->name_pretty, afi2str(afi));
+
+	/* skip when unicast sid is already allocated on vrf instance */
+	if (bgp->unicast_sid[afi]) {
+		zlog_debug("%s: already allocated.", __func__);
+		return;
+	}
+
+	/*
+	 * skip when bgp vpn instance ins't allocated
+	 * or srv6 locator chunk isn't allocated
+	 */
+	if (!bgp || !bgp->srv6_locator_chunks) {
+		zlog_debug("%s: no bgp or no srv6_locator_chunks", __func__);
+		return;
+	}
+
+	SET_FLAG(bgp->unicast_sid_flags[afi],
+		BGP_VPN_POLICY_TOVPN_SID_AUTO);
+
+	unicast_sid_index = bgp->unicast_sid_index[afi];
+	unicast_sid_auto = CHECK_FLAG(bgp->unicast_sid_flags[afi],
+				    BGP_VPN_POLICY_TOVPN_SID_AUTO);
+
+	/* skip when Unicast SID isn't configured on vrf-instance */
+	if (unicast_sid_index == 0 && !unicast_sid_auto) {
+		zlog_debug("%s: not configured", __func__);
+		return;
+	}
+
+	/* check invalid case both configured index and auto */
+	if (unicast_sid_index != 0 && unicast_sid_auto) {
+		zlog_err("%s: index-mode and auto-mode both selected. ignored.",
+			 __func__);
+		return;
+	}
+
+	unicast_sid_locator = srv6_locator_chunk_alloc();
+	unicast_sid = XCALLOC(MTYPE_BGP_SRV6_SID, sizeof(struct in6_addr));
+
+	unicast_sid_transpose_label = alloc_new_sid(bgp, unicast_sid_index,
+						  unicast_sid_locator, unicast_sid);
+
+	if (unicast_sid_transpose_label == 0) {
+		if (debug)
+			zlog_debug(
+				"%s: not allocated new sid for vrf %s: afi %s",
+				__func__, bgp->name_pretty, afi2str(afi));
+		srv6_locator_chunk_free(&unicast_sid_locator);
+		XFREE(MTYPE_BGP_SRV6_SID, unicast_sid);
+		return;
+	}
+
+	if (debug)
+		zlog_debug("%s: new sid %pI6 allocated for vrf %s: afi %s",
+			   __func__, unicast_sid, bgp->name_pretty,
+			   afi2str(afi));
+
+	bgp->unicast_sid[afi] = unicast_sid;
+	bgp->unicast_sid_locator[afi] = unicast_sid_locator;
+	bgp->unicast_sid_transpose_label[afi] =
+		unicast_sid_transpose_label;
+}
+
 
 /*
  * This function embeds upper `len` bits of `label` in `sid`,
