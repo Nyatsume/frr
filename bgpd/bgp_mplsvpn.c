@@ -931,7 +931,9 @@ void ensure_unicast_sid_per_af(struct bgp *bgp, afi_t afi)
 
 	/* skip when unicast sid is already allocated on vrf instance */
 	if (bgp->unicast_sid[afi]) {
-		zlog_debug("%s: already allocated.", __func__);
+		zlog_debug("%s: already allocated for afi: %d: %pI6",
+				__func__, afi,
+				bgp->unicast_sid[afi]);
 		return;
 	}
 
@@ -1706,8 +1708,7 @@ void vpn_leak_from_vrf_update(struct bgp *to_bgp,	     /* to */
 				.tovpn_sid_locator->node_bits_length;
 		;
 		memcpy(&static_attr.srv6_l3vpn->sid,
-		       &from_bgp->vpn_policy[afi]
-				.tovpn_sid_locator->prefix.prefix,
+		       from_bgp->vpn_policy[afi].tovpn_sid,
 		       sizeof(struct in6_addr));
 	} else if (from_bgp->tovpn_sid_locator) {
 		struct srv6_locator_chunk *locator =
@@ -1735,8 +1736,7 @@ void vpn_leak_from_vrf_update(struct bgp *to_bgp,	     /* to */
 			from_bgp->tovpn_sid_locator->block_bits_length +
 			from_bgp->tovpn_sid_locator->node_bits_length;
 		memcpy(&static_attr.srv6_l3vpn->sid,
-		       &from_bgp->tovpn_sid_locator->prefix.prefix,
-		       sizeof(struct in6_addr));
+		       from_bgp->tovpn_sid, sizeof(struct in6_addr));
 	}
 
 
@@ -2443,7 +2443,7 @@ void vpn_leak_unicast_sid_update(struct bgp *from_bgp,	   /* from */
 			from_bgp->unicast_sid_locator[afi]->node_bits_length;
 		;
 		memcpy(&static_attr.srv6_l3vpn->sid,
-		       &from_bgp->unicast_sid_locator[afi]->prefix.prefix,
+		       from_bgp->unicast_sid[afi],
 		       sizeof(struct in6_addr));
 	}
 
