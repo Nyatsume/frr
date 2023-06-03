@@ -2099,6 +2099,24 @@ unicast_sid_update(struct bgp *to_bgp, struct bgp_dest *bn,
 		return bpi;
 	}
 
+	bool have_extra = false;
+	for (bpi = bgp_dest_get_bgp_path_info(bn); bpi; bpi = bpi->next) {
+		if (bpi->extra) {
+			have_extra = true;
+			break;
+		}
+	}
+
+	if (have_extra) {
+		if (debug) {
+			zlog_debug(
+				"%s: ->%s(s_flags: 0x%x): %pFX: no parent, have extra, so stop attaching unicast_sid.",
+				__func__, to_bgp->name_pretty,
+				source_bpi->flags, p);
+		}
+		return NULL;
+	}
+
 	if (CHECK_FLAG(source_bpi->flags, BGP_PATH_REMOVED)) {
 		if (debug) {
 			zlog_debug(
