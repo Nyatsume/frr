@@ -2485,8 +2485,8 @@ void vpn_leak_unicast_sid_update(struct bgp *from_bgp,	   /* from */
 	if (new_info)
 		vpn_leak_to_vrf_update(from_bgp, new_info, NULL);
 	else
-#endif
 		bgp_dest_unlock_node(bn);
+#endif
 }
 
 void vpn_leak_unicast_sid_update_all(struct bgp *bgp, afi_t afi)
