@@ -1205,6 +1205,9 @@ static bool leak_update_nexthop_valid(struct bgp *to_bgp, struct bgp_dest *bn,
 	 * the SID allocation. If the sid is not allocated, the rib
 	 * will be invalid.
 	 */
+	zlog_debug ("%s: srv6: %d srv6_l3vpn: %d srv6_vpn: %d",
+			__func__, to_bgp->srv6_enabled,
+			new_attr->srv6_l3vpn, new_attr->srv6_vpn);
 	if (to_bgp->srv6_enabled &&
 	    (!new_attr->srv6_l3vpn && !new_attr->srv6_vpn)) {
 		nh_valid = false;
@@ -1979,6 +1982,14 @@ unicast_sid_update(struct bgp *to_bgp, struct bgp_dest *bn,
 	for (bpi = bgp_dest_get_bgp_path_info(bn); bpi; bpi = bpi->next) {
 		if (bpi->extra && bpi->extra->parent == parent)
 			break;
+	}
+
+	if (bpi && bpi->extra->num_sids) {
+		if (debug) {
+			zlog_debug("%s: ->%s: %pFX: Found same parent and sids, no need to update",
+				__func__, to_bgp->name_pretty, p);
+		}
+		return NULL;
 	}
 
 	if (bpi) {

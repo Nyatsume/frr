@@ -2139,11 +2139,6 @@ static int bgp_update_receive(struct peer *peer, bgp_size_t size)
 	/* Notify BGP Conditional advertisement scanner process */
 	peer->advmap_table_change = true;
 
-#if 0
-	vpn_leak_unicast_sid_update_all (peer->bgp, AFI_IP);
-	vpn_leak_unicast_sid_update_all (peer->bgp, AFI_IP6);
-#endif
-
 	return Receive_UPDATE_message;
 }
 
@@ -3033,11 +3028,6 @@ void bgp_process_packet(struct event *thread)
 						&peer->t_process_packet);
 		}
 	}
-
-#if 1
-	vpn_leak_unicast_sid_update_all (bgp, AFI_IP);
-	vpn_leak_unicast_sid_update_all (bgp, AFI_IP6);
-#endif
 }
 
 /* Send EOR when routes are processed by selection deferral timer */
