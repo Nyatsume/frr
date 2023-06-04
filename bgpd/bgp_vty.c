@@ -9977,6 +9977,10 @@ DEFPY (bgp_encapsulation_type_srv6,
 
 	afi = bgp_node_afi(vty);
 	safi = bgp_node_safi(vty);
+
+	zlog_debug ("encapsulation-type srv6 cmd typed: %s afi: %d safi: %d.",
+			bgp->name_pretty, afi, safi);
+
 	if ((SAFI_UNICAST != safi) || ((AFI_IP != afi) && (AFI_IP6 != afi))) {
 		vty_out(vty, "%% encapsulation-type srv6 valid only for unicast ipv4|ipv6\n");
 		return CMD_WARNING_CONFIG_FAILED;
@@ -9988,10 +9992,12 @@ DEFPY (bgp_encapsulation_type_srv6,
 	}
 
 	bgp->encapsulation_type_srv6[afi][safi] = 1;
+#if 0
 	ensure_unicast_sid_per_af(bgp, afi);
 	vpn_leak_zebra_unicast_sid_update_per_af(bgp, afi);
 	vpn_leak_unicast_sid_update_all(bgp, afi);
 	//srv6_prefix_sid_update_all(bgp, afi);
+#endif
 
 	return CMD_SUCCESS;
 }
