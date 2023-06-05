@@ -2072,11 +2072,11 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 						"TLV size does not match expected size of LAN END.X SID!\n");
 			} else {
 #else
-      {
+			{
 #endif
 				struct isis_srv6_sid_lan_end_x *lan;
 				struct isis_srv6_lan_adj_sid *srv6_lan_sid;
-        uint8_t subsubtlvs_len;
+				uint8_t subsubtlvs_len;
 
 				lan = XCALLOC(MTYPE_ISIS_SUBTLV,
 					sizeof(struct isis_srv6_sid_lan_end_x));
@@ -2092,9 +2092,9 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 				srv6_lan_sid->sid = lan->sids[0];
 				dump_srv6_segment_lan_end_x(lan);
 
-        subsubtlvs_len = stream_getc(s);
-        zlog_debug ("ISIS_SUBTLV_SID_LAN_END_X: subsubtlvs_len: %d",
-                    subsubtlvs_len);
+				subsubtlvs_len = stream_getc(s);
+				zlog_debug ("ISIS_SUBTLV_SID_LAN_END_X: subsubtlvs_len: %d",
+					subsubtlvs_len);
 				isis_tlvs_add_srv6_lan_adj_sid(exts, srv6_lan_sid);
 			}
 			break;
