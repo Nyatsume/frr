@@ -2056,11 +2056,12 @@ static int unpack_item_ext_subtlvs(uint16_t mtid, uint8_t len, struct stream *s,
 				srv6_adj_sid->sid = adj->sids[0];
 				dump_srv6_segment_end_x(adj);
 				marker_debug_msg("call");
+				isis_tlvs_add_srv6_adj_sid(exts, srv6_adj_sid);
 
 				subsubtlvs_len = stream_getc(s);
-        zlog_debug ("ISIS_SUBTLV_SID_END_X: subsubtlvs_len: %d",
-                    subsubtlvs_len);
-				isis_tlvs_add_srv6_adj_sid(exts, srv6_adj_sid);
+				zlog_debug ("ISIS_SUBTLV_SID_END_X: subsubtlvs_len: %d",
+					subsubtlvs_len);
+				stream_forward_getp(s, subsubtlvs_len);
 			}
 			break;
 		case ISIS_SUBTLV_SID_LAN_END_X:
