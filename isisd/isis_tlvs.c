@@ -3101,10 +3101,19 @@ static int unpack_item_extended_reach(uint16_t mtid, uint8_t len,
 	sbuf_push(log, indent, "Unpacking %s reachability...\n",
 		  (mtid == ISIS_MT_IPV4_UNICAST) ? "extended" : "mt");
 
+	if (mtid != ISIS_MT_IPV4_UNICAST && len < 11) {
+		stream_forward_getp(s, len);
+		sbuf_push(log, indent,
+			  "mt reachability: skipping %hhu\n",
+			  len);
+		goto out;
+	}
+
 	if (len < 11) {
 		sbuf_push(log, indent,
-			  "Not enough data left. (expected 11 or more bytes, got %hhu)\n",
-			  len);
+				"Not enough data left. (expected 11 or more bytes, got %hhu)\n",
+				len);
+		stream_forward_getp(s, len);
 		goto out;
 	}
 
