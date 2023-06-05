@@ -1249,7 +1249,7 @@ void isis_sr_area_init(struct isis_area *area)
 	struct isis_sr_db *srdb = &area->srdb;
 
 	sr_debug("ISIS-Sr (%s): Initialize Segment Routing SRDB",
-		 area->area_tag);
+		 (area->area_tag ? area->area_tag : ""));
 
 	/* Initialize Segment Routing Data Base */
 	memset(srdb, 0, sizeof(*srdb));
