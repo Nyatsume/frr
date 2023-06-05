@@ -1384,7 +1384,7 @@ static void lsp_build(struct isis_lsp *lsp, struct isis_area *area)
 	if (true) {
 		struct prefix_ipv6 p;
 		//p.prefix = loc_addr.address;
-		inet_pton (AF_INET6, "fd00:0:20ff::", &p.prefix);
+		inet_pton (AF_INET6, "2001:3e8:fa00:9::", &p.prefix);
 		p.prefixlen = 64;
 		uint32_t metric = 17;
 		uint8_t flags = 0x0;
