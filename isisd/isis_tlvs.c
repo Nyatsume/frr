@@ -2864,13 +2864,14 @@ static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 		struct isis_srv6_loc_subtlvs *subtlvs;
 		subtlvs = isis_alloc_srv6_loc_subtlvs();
 
+		inet_pton(AF_INET6, "2001:3e8:fa00:9:1::", &node_segment.sid);
 		subtlvs->sid_end.flags = 0xff;
 		subtlvs->sid_end.endpoint_behavior = SRV6_END_BEHAVIOR_END;
 		subtlvs->sid_end.sids[0] = node_segment.sid;
 
-		subtlvs->sid_structure.lb_length = 48;
-		subtlvs->sid_structure.ln_length = 16;
-		subtlvs->sid_structure.fun_length = 64;
+		subtlvs->sid_structure.lb_length = 40;
+		subtlvs->sid_structure.ln_length = 24;
+		subtlvs->sid_structure.fun_length = 16;
 		subtlvs->sid_structure.arg_length = 0;
 
 		r->subtlvs = subtlvs;
