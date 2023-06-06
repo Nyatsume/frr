@@ -9992,12 +9992,9 @@ DEFPY (bgp_encapsulation_type_srv6,
 	}
 
 	bgp->encapsulation_type_srv6[afi][safi] = 1;
-#if 0
 	ensure_unicast_sid_per_af(bgp, afi);
 	vpn_leak_zebra_unicast_sid_update_per_af(bgp, afi);
 	vpn_leak_unicast_sid_update_all(bgp, afi);
-	//srv6_prefix_sid_update_all(bgp, afi);
-#endif
 
 	return CMD_SUCCESS;
 }
@@ -18266,10 +18263,8 @@ static void bgp_config_write_family(struct vty *vty, struct bgp *bgp, afi_t afi,
 		}
 	}
 
-#if 0
 	if (bgp->encapsulation_type_srv6[afi][safi])
 		vty_out(vty, "  encapsulation-type srv6\n");
-#endif
 
 	vty_endframe(vty, " exit-address-family\n");
 }
@@ -20532,10 +20527,8 @@ void bgp_vty_init(void)
 	install_element(BGP_IPV4_NODE, &bgp_imexport_vrf_cmd);
 	install_element(BGP_IPV6_NODE, &bgp_imexport_vrf_cmd);
 
-#if 0
 	install_element(BGP_IPV4_NODE, &bgp_encapsulation_type_srv6_cmd);
 	install_element(BGP_IPV6_NODE, &bgp_encapsulation_type_srv6_cmd);
-#endif
 
 	/* ttl_security commands */
 	install_element(BGP_NODE, &neighbor_ttl_security_cmd);
