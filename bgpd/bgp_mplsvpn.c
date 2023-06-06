@@ -708,8 +708,11 @@ static uint32_t alloc_new_sid(struct bgp *bgp, uint32_t index,
 		}
 	}
 
-	if (!alloced)
+	if (!alloced) {
+		if (debug)
+			zlog_debug("%s: no locator chunk ?", __func__);
 		return 0;
+	}
 
 	sid_register(bgp, sid, bgp->srv6_locator_name);
 	return label;
@@ -2112,7 +2115,7 @@ unicast_sid_update(struct bgp *to_bgp, struct bgp_dest *bn,
 
 	bool have_extra = false;
 	for (bpi = bgp_dest_get_bgp_path_info(bn); bpi; bpi = bpi->next) {
-		if (bpi->extra) {
+		if (bpi->extra && bpi->extra->num_sids) {
 			have_extra = true;
 			break;
 		}
