@@ -308,6 +308,8 @@ int bgp_find_or_add_nexthop(struct bgp *bgp_route, struct bgp *bgp_nexthop,
 		if (make_prefix(afi, pi, &p) < 0)
 			return 1;
 
+		//zlog_debug("%s(%pFX): Prefix-SID search", __func__, &p);
+
 		if (!is_bgp_static_route && orig_prefix
 		    && prefix_same(&p, orig_prefix)) {
 			if (BGP_DEBUG(nht, NHT)) {
