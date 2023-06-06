@@ -4560,6 +4560,10 @@ void bgp_update(struct peer *peer, const struct prefix *p, uint32_t addpath_id,
 
 		/* Update SRv6 SID */
 		if (attr->srv6_l3vpn) {
+
+			zlog_debug("Prefix-SID(l3vpn): %pBP rcvd %pI6, valid: %d", peer,
+				&attr->srv6_l3vpn->sid, CHECK_FLAG(pi->flags, BGP_PATH_VALID));
+
 			extra = bgp_path_info_extra_get(pi);
 			if (sid_diff(&extra->sid[0].sid,
 				     &attr->srv6_l3vpn->sid)) {
@@ -4664,10 +4668,16 @@ void bgp_update(struct peer *peer, const struct prefix *p, uint32_t addpath_id,
 			    CHECK_FLAG(peer->flags, PEER_FLAG_IS_RFAPI_HD))
 				bgp_path_info_set_flag(dest, pi,
 						       BGP_PATH_VALID);
-			else {
+			else if (pi->extra && pi->extra->num_sids) {
+				bgp_path_info_set_flag(dest, pi,
+						       BGP_PATH_VALID);
+					zlog_debug("%s:%d(%pI4): NH unresolved but Prefix-SID",
+						   __func__, __LINE__,
+						   (in_addr_t *)&attr_new->nexthop);
+			} else {
 				if (BGP_DEBUG(nht, NHT)) {
-					zlog_debug("%s(%pI4): NH unresolved",
-						   __func__,
+					zlog_debug("%s:%d(%pI4): NH unresolved",
+						   __func__, __LINE__,
 						   (in_addr_t *)&attr_new->nexthop);
 				}
 				bgp_path_info_unset_flag(dest, pi,
@@ -4829,9 +4839,14 @@ void bgp_update(struct peer *peer, const struct prefix *p, uint32_t addpath_id,
 					    connected, bgp_nht_param_prefix) ||
 		    CHECK_FLAG(peer->flags, PEER_FLAG_IS_RFAPI_HD))
 			bgp_path_info_set_flag(dest, new, BGP_PATH_VALID);
-		else {
+		else if (new->extra && new->extra->num_sids) {
+				zlog_debug("%s:%d(%pI4): NH unresolved but Prefix-SID",
+					   __func__, __LINE__,
+					   &attr_new->nexthop);
+			bgp_path_info_set_flag(dest, new, BGP_PATH_VALID);
+		} else {
 			if (BGP_DEBUG(nht, NHT))
-				zlog_debug("%s(%pI4): NH unresolved", __func__,
+				zlog_debug("%s:%d(%pI4): NH unresolved", __func__, __LINE__,
 					   &attr_new->nexthop);
 			bgp_path_info_unset_flag(dest, new, BGP_PATH_VALID);
 		}
