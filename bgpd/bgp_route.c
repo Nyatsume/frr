@@ -3580,7 +3580,10 @@ void bgp_process(struct bgp *bgp, struct bgp_dest *dest, afi_t afi, safi_t safi)
 		zlog_debug ("%s: call vpn_leak_unicast_sid_update_all: %s afi: %d",
 			__func__, bgp->name_pretty, afi);
 		ensure_unicast_sid_per_af(bgp, afi);
-		vpn_leak_zebra_unicast_sid_update_per_af(bgp, afi);
+    if (sid_diff (
+            bgp->unicast_sid[afi],
+            bgp->unicast_zebra_vrf_sid_last_sent[afi]))
+		  vpn_leak_zebra_unicast_sid_update_per_af(bgp, afi);
 		vpn_leak_unicast_sid_update_all(bgp, afi);
 	}
 #endif
