@@ -2852,7 +2852,7 @@ static int pack_item_srv6_locator_info(struct isis_item *i, struct stream *s,
 #endif
 
 	// TODO(slankdev)
-	stream_putw(s, 0);
+	stream_putw(s, 0x02);
 	stream_putl(s, r->metric);
 	stream_putc(s, r->flags);
 	stream_putc(s, r->algorithm);
