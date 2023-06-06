@@ -1992,7 +1992,7 @@ unicast_sid_update(struct bgp *to_bgp, struct bgp_dest *bn,
 			zlog_debug("%s: ->%s: %pFX: Found same parent and sids, no need to update",
 				__func__, to_bgp->name_pretty, p);
 		}
-		return NULL;
+		//return NULL;
 	}
 
 	if (bpi) {
