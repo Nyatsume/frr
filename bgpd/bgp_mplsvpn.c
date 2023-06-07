@@ -934,9 +934,9 @@ void ensure_unicast_sid_per_af(struct bgp *bgp, afi_t afi)
 
 	/* skip when unicast sid is already allocated on vrf instance */
 	if (bgp->unicast_sid[afi]) {
-		zlog_debug("%s: already allocated for afi: %d: %pI6",
-				__func__, afi,
-				bgp->unicast_sid[afi]);
+		if (debug)
+			zlog_debug("%s: already allocated for afi: %d: %pI6",
+					__func__, afi, bgp->unicast_sid[afi]);
 		return;
 	}
 
@@ -945,7 +945,8 @@ void ensure_unicast_sid_per_af(struct bgp *bgp, afi_t afi)
 	 * or srv6 locator chunk isn't allocated
 	 */
 	if (!bgp || !bgp->srv6_locator_chunks) {
-		zlog_debug("%s: no bgp or no srv6_locator_chunks", __func__);
+		if (debug)
+			zlog_debug("%s: no bgp or no srv6_locator_chunks", __func__);
 		return;
 	}
 
@@ -958,7 +959,8 @@ void ensure_unicast_sid_per_af(struct bgp *bgp, afi_t afi)
 
 	/* skip when Unicast SID isn't configured on vrf-instance */
 	if (unicast_sid_index == 0 && !unicast_sid_auto) {
-		zlog_debug("%s: not configured", __func__);
+		if (debug)
+			zlog_debug("%s: not configured", __func__);
 		return;
 	}
 
