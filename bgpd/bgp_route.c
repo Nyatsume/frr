@@ -4587,12 +4587,17 @@ void bgp_update(struct peer *peer, const struct prefix *p, uint32_t addpath_id,
 						attr->srv6_l3vpn->func_len;
 					extra->sid[0].arg_len =
 						attr->srv6_l3vpn->arg_len;
+#if 0
 					extra->sid[0].transposition_len =
 						attr->srv6_l3vpn
 							->transposition_len;
 					extra->sid[0].transposition_offset =
 						attr->srv6_l3vpn
 							->transposition_offset;
+#else
+					extra->sid[0].transposition_len = 0;
+					extra->sid[0].transposition_offset = 0;
+#endif
 				}
 			}
 		} else if (attr->srv6_vpn) {
@@ -4809,10 +4814,15 @@ void bgp_update(struct peer *peer, const struct prefix *p, uint32_t addpath_id,
 				attr->srv6_l3vpn->loc_node_len;
 			extra->sid[0].func_len = attr->srv6_l3vpn->func_len;
 			extra->sid[0].arg_len = attr->srv6_l3vpn->arg_len;
+#if 0
 			extra->sid[0].transposition_len =
 				attr->srv6_l3vpn->transposition_len;
 			extra->sid[0].transposition_offset =
 				attr->srv6_l3vpn->transposition_offset;
+#else
+			extra->sid[0].transposition_len = 0;
+			extra->sid[0].transposition_offset = 0;
+#endif
 		} else if (attr->srv6_vpn) {
 			sid_copy(&extra->sid[0].sid, &attr->srv6_vpn->sid);
 			extra->num_sids = 1;
