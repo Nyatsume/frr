@@ -2077,11 +2077,16 @@ unicast_sid_update(struct bgp *to_bgp, struct bgp_dest *bn,
 					new_attr->srv6_l3vpn->func_len;
 				extra->sid[0].arg_len =
 					new_attr->srv6_l3vpn->arg_len;
+#if 0
 				extra->sid[0].transposition_len =
 					new_attr->srv6_l3vpn->transposition_len;
 				extra->sid[0].transposition_offset =
 					new_attr->srv6_l3vpn
 						->transposition_offset;
+#else
+				extra->sid[0].transposition_len = 0;
+				extra->sid[0].transposition_offset = 0;
+#endif
 			} else if (new_attr->srv6_vpn)
 				setsids(bpi, &new_attr->srv6_vpn->sid,
 					num_sids);
@@ -2450,11 +2455,16 @@ void vpn_leak_unicast_sid_update(struct bgp *from_bgp,	   /* from */
 			from_bgp->unicast_sid_locator[afi]->function_bits_length;
 		static_attr.srv6_l3vpn->arg_len =
 			from_bgp->unicast_sid_locator[afi]->argument_bits_length;
+#if 0
 		static_attr.srv6_l3vpn->transposition_len =
 			from_bgp->unicast_sid_locator[afi]->function_bits_length;
 		static_attr.srv6_l3vpn->transposition_offset =
 			from_bgp->unicast_sid_locator[afi]->block_bits_length +
 			from_bgp->unicast_sid_locator[afi]->node_bits_length;
+#else
+		static_attr.srv6_l3vpn->transposition_len = 0;
+		static_attr.srv6_l3vpn->transposition_offset = 0;
+#endif
 		;
 		memcpy(&static_attr.srv6_l3vpn->sid,
 		       from_bgp->unicast_sid[afi],
