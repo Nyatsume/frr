@@ -1357,11 +1357,16 @@ leak_update(struct bgp *to_bgp, struct bgp_dest *bn,
 					new_attr->srv6_l3vpn->func_len;
 				extra->sid[0].arg_len =
 					new_attr->srv6_l3vpn->arg_len;
+#if 0
 				extra->sid[0].transposition_len =
 					new_attr->srv6_l3vpn->transposition_len;
 				extra->sid[0].transposition_offset =
 					new_attr->srv6_l3vpn
 						->transposition_offset;
+#else
+				extra->sid[0].transposition_len = 0;
+				extra->sid[0].transposition_offset = 0;
+#endif
 			} else if (new_attr->srv6_vpn)
 				setsids(bpi, &new_attr->srv6_vpn->sid,
 					num_sids);
@@ -1434,10 +1439,15 @@ leak_update(struct bgp *to_bgp, struct bgp_dest *bn,
 				new_attr->srv6_l3vpn->loc_node_len;
 			extra->sid[0].func_len = new_attr->srv6_l3vpn->func_len;
 			extra->sid[0].arg_len = new_attr->srv6_l3vpn->arg_len;
+#if 0
 			extra->sid[0].transposition_len =
 				new_attr->srv6_l3vpn->transposition_len;
 			extra->sid[0].transposition_offset =
 				new_attr->srv6_l3vpn->transposition_offset;
+#else
+			extra->sid[0].transposition_len = 0;
+			extra->sid[0].transposition_offset = 0;
+#endif
 		} else if (new_attr->srv6_vpn)
 			setsids(new, &new_attr->srv6_vpn->sid, num_sids);
 	} else
@@ -1706,6 +1716,7 @@ void vpn_leak_from_vrf_update(struct bgp *to_bgp,	     /* to */
 		static_attr.srv6_l3vpn->arg_len =
 			from_bgp->vpn_policy[afi]
 				.tovpn_sid_locator->argument_bits_length;
+#if 0
 		static_attr.srv6_l3vpn->transposition_len =
 			from_bgp->vpn_policy[afi]
 				.tovpn_sid_locator->function_bits_length;
@@ -1714,6 +1725,10 @@ void vpn_leak_from_vrf_update(struct bgp *to_bgp,	     /* to */
 				.tovpn_sid_locator->block_bits_length +
 			from_bgp->vpn_policy[afi]
 				.tovpn_sid_locator->node_bits_length;
+#else
+		static_attr.srv6_l3vpn->transposition_len = 0;
+		static_attr.srv6_l3vpn->transposition_offset = 0;
+#endif
 		;
 		memcpy(&static_attr.srv6_l3vpn->sid,
 		       from_bgp->vpn_policy[afi].tovpn_sid,
@@ -1738,11 +1753,16 @@ void vpn_leak_from_vrf_update(struct bgp *to_bgp,	     /* to */
 			from_bgp->tovpn_sid_locator->function_bits_length;
 		static_attr.srv6_l3vpn->arg_len =
 			from_bgp->tovpn_sid_locator->argument_bits_length;
+#if 0
 		static_attr.srv6_l3vpn->transposition_len =
 			from_bgp->tovpn_sid_locator->function_bits_length;
 		static_attr.srv6_l3vpn->transposition_offset =
 			from_bgp->tovpn_sid_locator->block_bits_length +
 			from_bgp->tovpn_sid_locator->node_bits_length;
+#else
+		static_attr.srv6_l3vpn->transposition_len = 0;
+		static_attr.srv6_l3vpn->transposition_offset = 0;
+#endif
 		memcpy(&static_attr.srv6_l3vpn->sid,
 		       from_bgp->tovpn_sid, sizeof(struct in6_addr));
 	}
@@ -2184,10 +2204,15 @@ unicast_sid_update(struct bgp *to_bgp, struct bgp_dest *bn,
 				new_attr->srv6_l3vpn->loc_node_len;
 			extra->sid[0].func_len = new_attr->srv6_l3vpn->func_len;
 			extra->sid[0].arg_len = new_attr->srv6_l3vpn->arg_len;
+#if 0
 			extra->sid[0].transposition_len =
 				new_attr->srv6_l3vpn->transposition_len;
 			extra->sid[0].transposition_offset =
 				new_attr->srv6_l3vpn->transposition_offset;
+#else
+			extra->sid[0].transposition_len = 0;
+			extra->sid[0].transposition_offset = 0;
+#endif
 		} else if (new_attr->srv6_vpn)
 			setsids(new, &new_attr->srv6_vpn->sid, num_sids);
 	} else
