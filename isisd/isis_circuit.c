@@ -1127,7 +1127,8 @@ void isis_circuit_print_vty(struct isis_circuit *circuit, struct vty *vty,
 		if (circuit->circ_type == CIRCUIT_T_BROADCAST)
 			vty_out(vty, ", SNPA: %-10pSY", circuit->u.bc.snpa);
 		vty_out(vty, "\n");
-		if (circuit->is_type & IS_LEVEL_1) {
+		//if (circuit->is_type & IS_LEVEL_1) {
+		{
 			vty_out(vty, "    Level-1 Information:\n");
 			if (circuit->area->newmetric)
 				vty_out(vty, "      Metric: %d",
@@ -1159,7 +1160,8 @@ void isis_circuit_print_vty(struct isis_circuit *circuit, struct vty *vty,
 				vty_out(vty, "\n");
 			}
 		}
-		if (circuit->is_type & IS_LEVEL_2) {
+		//if (circuit->is_type & IS_LEVEL_2) {
+		{
 			vty_out(vty, "    Level-2 Information:\n");
 			if (circuit->area->newmetric)
 				vty_out(vty, "      Metric: %d",
@@ -1430,6 +1432,27 @@ static int isis_interface_config_write(struct vty *vty)
 					}
 				}
 			}
+			/* metric var (not te) */
+			if (circuit->metric[0] == circuit->metric[1]) {
+				if (circuit->metric[0]
+				    != DEFAULT_CIRCUIT_METRIC) {
+					vty_out(vty, " " PROTO_NAME " metric %d\n",
+						circuit->metric[0]);
+					write++;
+				}
+			} else {
+				for (i = 0; i < 2; i++) {
+					if (circuit->metric[i]
+					    != DEFAULT_CIRCUIT_METRIC) {
+						vty_out(vty,
+							" " PROTO_NAME " metric %d level-%d\n",
+							circuit->metric[i],
+							i + 1);
+						write++;
+					}
+				}
+			}
+
 			if (circuit->passwd.type == ISIS_PASSWD_TYPE_HMAC_MD5) {
 				vty_out(vty, " " PROTO_NAME " password md5 %s\n",
 					circuit->passwd.passwd);
