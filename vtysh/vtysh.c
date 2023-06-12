@@ -3335,10 +3335,8 @@ DEFUN (vtysh_write_terminal,
 			vtysh_client_config(&vtysh_client[i], line);
 
 	/* Integrate vtysh specific configuration. */
-	vty_open_pager(vty);
 	vtysh_config_write();
 	vtysh_config_dump();
-	vty_close_pager(vty);
 	vty_out(vty, "end\n");
 
 	return CMD_SUCCESS;
