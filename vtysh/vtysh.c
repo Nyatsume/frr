@@ -512,6 +512,12 @@ static int vtysh_execute_func(const char *line, int pager)
 	int tried = 0;
 	int saved_ret, saved_node;
 
+	struct winsize winsize;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize);
+	vty->width = winsize.ws_col;
+	vty->height = winsize.ws_row;
+	//vty_out(vty, "vty width: %d height: %d\n", vty->width, vty->height);
+
 	/* Split readline string up into the vector. */
 	vline = cmd_make_strvec(line);
 
@@ -551,7 +557,7 @@ static int vtysh_execute_func(const char *line, int pager)
 	if (ret == CMD_SUCCESS || ret == CMD_SUCCESS_DAEMON
 	    || ret == CMD_WARNING) {
 		while (tried-- > 0)
-			vtysh_execute("exit");
+			vtysh_execute_no_pager("exit");
 	}
 	/*
 	 * If command didn't succeed in any node, continue with return value
@@ -580,14 +586,6 @@ static int vtysh_execute_func(const char *line, int pager)
 		vty_out(vty, "%% Command incomplete: %s\n", line);
 		break;
 	case CMD_SUCCESS_DAEMON: {
-		/*
-		 * FIXME: Don't open pager for exit commands. popen() causes
-		 * problems if exited from vtysh at all. This hack shouldn't
-		 * cause any problem but is really ugly.
-		 */
-		if (pager && strncmp(line, "exit", 4))
-			vty_open_pager(vty);
-
 		if (!strcmp(cmd->string, "configure")) {
 			for (i = 0; i < array_size(vtysh_client); i++) {
 				cmd_stat = vtysh_client_execute(
@@ -599,7 +597,6 @@ static int vtysh_execute_func(const char *line, int pager)
 			if (cmd_stat) {
 				line = "end";
 				vline = cmd_make_strvec(line);
-
 
 				if (vline == NULL) {
 					if (vty->is_paged)
@@ -656,6 +653,12 @@ static int vtysh_execute_func(const char *line, int pager)
 			(*cmd->func)(cmd, vty, 0, NULL);
 	}
 	}
+
+	if (pager && vty->vtysh_lines > vty->height)
+		vty_open_pager(vty);
+
+	vty_out_flush_vtysh_pager(vty);
+
 	if (vty->is_paged)
 		vty_close_pager(vty);
 
@@ -1037,6 +1040,17 @@ static int vtysh_process_questionmark(const char *input, int input_len)
 
 	cmd_free_strvec(vline);
 	vector_free(describe);
+
+	/* if you don't want pager for help descriptions,
+	   change the "pager" to 0. */
+	int pager = 1;
+	if (pager && vty->vtysh_lines > vty->height)
+		vty_open_pager(vty);
+
+	vty_out_flush_vtysh_pager(vty);
+
+	if (vty->is_paged)
+		vty_close_pager(vty);
 
 	return 0;
 }
@@ -2363,8 +2377,8 @@ static int vtysh_exit(struct vty *vty)
 
 	if (vty->node == CONFIG_NODE) {
 		/* resync in case one of the daemons is somewhere else */
-		vtysh_execute("end");
-		vtysh_execute("configure");
+		vtysh_execute_no_pager("end");
+		vtysh_execute_no_pager("configure");
 	}
 	return CMD_SUCCESS;
 }
